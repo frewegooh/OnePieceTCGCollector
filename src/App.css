@@ -1,0 +1,519 @@
+/* Base Styles */
+.App {
+  text-align: left;
+  width: 100%;
+  max-width: 100%;
+}
+
+#root, .App > div {
+  width: 100%;
+  max-width: 100%;
+}
+
+.App > div > section {
+  display:flex;
+  flex-direction:column;
+}
+
+.secBody {
+  width: 1350px;
+  max-width: 90%;
+  margin: 0 auto;
+  padding-top:25px;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+  animation: App-logo-spin infinite 20s linear;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .App-logo {
+    animation: none;
+  }
+}
+
+/* Header */
+header {
+  display: flex;
+  align-items: center;
+  width: 1350px;
+  max-width: 90%;
+  margin: 0 auto;
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+/* Navigation */
+nav {
+  margin: 1rem 0;
+  flex-grow: 1;
+  text-align: right;
+}
+
+nav a {
+  margin-right: 1rem;
+  text-decoration: none;
+  color: #007bff;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+nav a:hover {
+  text-decoration: underline;
+}
+
+/* Card Catalog */
+.rightCardPanel {
+  min-width: 50%;
+  flex-grow:1;
+}
+
+.cardListCSS ul {
+  list-style: none;
+  padding-left: 0;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.cardListCSS ul > li {
+  width: 21.33%;
+  padding: 2% 1%;
+  margin: 0 2% 3% 0%;
+  text-align: center;
+  border-radius: 0px;
+  border: 1px solid rgba(0, 0, 0, 1);
+  -webkit-box-shadow: 1px 3px 0px 0px rgba(255, 42, 109, 1);
+  -moz-box-shadow: 1px 3px 0px 0px rgba(255, 42, 109, 1);
+  box-shadow: 1px 3px 0px 0px rgba(255, 42, 109, 1);
+  transition:300ms ease-in-out all;
+  position:relative;
+}
+
+
+.cardListCSS ul > li:nth-child(5n + 1) {
+  margin-left:0px;
+}
+
+.cardListCSS ul > li:nth-child(4n) {
+  margin-right:0px;
+}
+
+.cardListCSS ul > li:hover {
+  -webkit-box-shadow: 0px 0px 0px 0px rgba(255, 42, 109, 1);
+    -moz-box-shadow: 0px 0px 0px 0px rgba(255, 42, 109, 1);
+    box-shadow: 0px 0px 0px 0px rgba(255, 42, 109, 1);
+    transition:300ms ease-in-out all;
+    transform: translateY(-10px);
+}
+
+.cardListCSS ul > li img {
+  max-width: 90%;
+  max-height: 275px;
+}
+
+.cardListCSS ul > li h3 {
+  font-weight: 400;
+}
+
+/* Logo */
+.menuLogo {
+  width: 275px;
+}
+
+/* Animations */
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Side Filters */
+.sideFilterPar, .sideFilter {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+}
+.sideFilterPar, .sideFilter > div {
+  margin-left:10px;
+  margin-right:10px;
+}
+.sideFilterPar  h3 {
+  color:#ff2a6d;
+  margin-bottom:10px;
+  margin-top:25px;
+}
+
+.cost-filter > div {
+  width:75px;
+}
+.cost-filter h3 {
+  margin-top:0px;
+}
+
+.GroupFilter #groupFilter {
+  max-width:100%;
+}
+
+ .color-options, .type-options  {
+  display: flex;
+  flex-direction: column;
+}
+.sideFilter input[type='checkbox'] {
+  display:none;
+}
+.sideFilter li {
+  /*border: 2px solid black;*/
+  padding: 4px 8px;
+  text-transform: uppercase;
+  font-weight: bold;
+  display: inline-block;
+  margin-bottom: 5px;
+}
+.sideFilter label:has(input[type="checkbox"]:checked) {
+  background-color:#15cfed;
+  border-color:#15cfed;
+}
+
+.multi-select-dropdown .dropdown-options {
+  position: absolute;
+  background-color: white;
+  border: 1px solid #ccc;
+  list-style: none;
+  padding: 10px;
+  margin: 0;
+  overflow-y: auto;
+  z-index: 1000;
+  display: flex;
+    flex-direction: column;
+}
+
+/* Card Info Popup */
+.cardInfoPop {
+  display: flex;
+  flex-direction: row;
+}
+.cardInfoPop .imgHolder, .cardInfoPop .imgHolder img {
+  width:100%;
+  margin-right:20px;
+  max-width:200px;
+}
+.cardInfoPop p {
+  margin: 10px 0px;
+}
+
+.cardListCard h3 {
+  margin-top:0px;
+}
+
+/* Basic Button */
+button {
+  background-color: rgba(0, 0, 0, 0);
+    font-size: 18px;
+    margin-top: 10px;
+    margin-bottom:10px;
+    -webkit-box-shadow: 1px 3px 0px 0px rgba(255, 42, 109, 1);
+    -moz-box-shadow: 1px 3px 0px 0px rgba(255, 42, 109, 1);
+    box-shadow: 1px 3px 0px 0px rgba(255, 42, 109, 1);
+    transition:300ms ease-in-out all;
+}
+button:hover {
+  -webkit-box-shadow: 0px 0px 0px 0px rgba(255, 42, 109, 1);
+    -moz-box-shadow: 0px 0px 0px 0px rgba(255, 42, 109, 1);
+    box-shadow: 0px 0px 0px 0px rgba(255, 42, 109, 1);
+    transition:300ms ease-in-out all;
+}
+
+.cardListCard .magnifier {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 25px;
+  opacity: .6;
+}
+
+.card-text-on, .card-text-whe, .card-text-don, .card-text-onc, .card-text-you, .card-text-blo, .card-text-cou, .card-text-tri, .card-text-opp {
+  color:#fff;
+  border-radius: 5px;
+  padding:2px 5px; 
+}
+.card-text-on, .card-text-whe, .card-text-you, .card-text-opp {
+  background-color:#0570a7;
+}
+.card-text-don {
+  background-color:#000;
+}
+.card-text-onc, .card-text-cou {
+  background-color:#f43f5e;
+}
+.card-text-blo {
+  background-color:#f97316;
+}
+.card-text-tri {
+  background-color:yellow;
+  color:#000;
+}
+
+.dropdown-item.ranged, .dropdown-item.ranged-strike, .dropdown-item.slash, .dropdown-item.slash-special, .dropdown-item.slash-strike, .dropdown-item.special, .dropdown-item.special-strike, .dropdown-item.strike, .dropdown-item.wisdom {
+  display: flex;
+  align-items: center;
+}
+.dropdown-item.ranged:before, .dropdown-item.ranged-strike:before, .dropdown-item.slash:before, .dropdown-item.slash-special:before, .dropdown-item.slash-strike:before, .dropdown-item.special:before, .dropdown-item.special-strike:before, .dropdown-item.strike:before, .dropdown-item.wisdom:before {
+  content:'';
+  width:25px;
+  height:20px;
+  background-size: contain;
+  background-repeat:no-repeat;
+}
+
+.dropdown-item.ranged:before {background-image: url("https://storage.googleapis.com/card-tracker-images/UI-Images/ranged.webp");}
+.dropdown-item.ranged-strike:before {background-image: url("https://storage.googleapis.com/card-tracker-images/UI-Images/ranged-strike.webp");}
+.dropdown-item.slash:before {background-image: url("https://storage.googleapis.com/card-tracker-images/UI-Images/slash.webp");}
+.dropdown-item.slash-special:before {background-image: url("https://storage.googleapis.com/card-tracker-images/UI-Images/slash_special.webp");}
+.dropdown-item.special:before {background-image: url("https://storage.googleapis.com/card-tracker-images/UI-Images/special.webp");}
+.dropdown-item.special-strike:before {background-image: url("https://storage.googleapis.com/card-tracker-images/UI-Images/strike_special.webp");}
+.dropdown-item.strike:before {background-image: url("https://storage.googleapis.com/card-tracker-images/UI-Images/strike.webp");}
+.dropdown-item.wisdom:before {background-image: url("https://storage.googleapis.com/card-tracker-images/UI-Images/wisdom.webp");}
+.dropdown-item.slash-strike:before {background-image: url("https://storage.googleapis.com/card-tracker-images/UI-Images/slash_strike.webp");}
+
+
+.set-filter #groupFilter {
+  max-width:100px;
+}
+
+br {
+  margin-bottom:10px;
+}
+
+input[type=text], select {
+  border-radius:0px;
+  background-color: rgba(0, 0, 0, 0);
+  border-width:2px;
+  border-color:#000;
+  font-size: 18px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  box-shadow: 1px 3px 0px 0px rgba(255, 42, 109, 1);
+  transition: 300ms ease-in-out all;
+  outline:none;
+}
+input[type=text]:focus {
+  box-shadow: 0px 0px 0px 0px rgba(255, 42, 109, 1);
+}
+
+
+.navArrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.leftArrow {
+  left: 0px;
+  transform: translate(-100%, -50%);
+  background: white;
+}
+
+.rightArrow {
+  right: 0px;
+  transform: translate(100%, -50%);
+  background: white;
+}
+
+.cardDetailPopup {
+  position: relative;
+  padding: 1rem;
+  background: white;
+  border-radius: 8px;
+}
+
+.cardInfo img {
+  max-width: 100%;
+  border-radius: 8px;
+}
+
+.modal-close {
+  z-index:1111;
+}
+
+
+.selected-cards .card-container-card > div > h2  {
+  display:none;
+}
+
+.card-container-leader, .card-container-leader img {
+  max-width:250px;
+}
+
+.selected-cards .card-container-card > div > ul {
+  list-style: none;
+  padding-left: 0;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+.selected-cards .card-container-card > div > ul > li {
+  width: 21.33%;
+  padding: 2% 1%;
+  margin: 0 2% 3% 0%;
+  text-align: center;
+  border-radius: 0px;
+  border: 1px solid rgba(0, 0, 0, 1);
+  box-shadow: 1px 3px 0px 0px rgba(255, 42, 109, 1);
+  transition: 300ms ease-in-out all;
+  position: relative;
+}
+.selected-cards .card-container-card > div > ul > li img {
+  max-width:100%;
+}
+
+.cardBuilderPar .rightCardPanel.cardListCSS ul > li, .deckBuilder li.cardListCard {
+  max-width:90px;
+  margin:5px !important;
+}
+
+.deckBuilder li.cardListCard {
+  position: relative;
+    display: block;
+}
+.deckBuilder li.cardListCard img {
+  max-width:100%;
+}
+.cardBuilderPar .rightCardPanel.cardListCSS ul > li > h3, .deckBuilder li.cardListCard h3 {
+  display:none;
+}
+
+.cardBuilderPar .cardListCard {
+  padding:0px 0px 10px 0px!important; 
+}
+
+.rightCardPanel.cardListCSS, .deckBuilder {
+  max-height:50vh;
+  overflow:scroll;
+}
+.owned-filter {
+  padding: 10px;
+  margin: 10px 0;
+  display: flex;
+  align-items: center;
+}
+
+.owned-filter label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.owned-filter input[type="checkbox"] {
+  appearance: none;
+  width: 50px;
+  height: 24px;
+  background: #ccc;
+  border-radius: 12px;
+  position: relative;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.owned-filter input[type="checkbox"]:checked {
+  background: #4CAF50;
+}
+
+.owned-filter input[type="checkbox"]::before {
+  content: '';
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: 0.3s;
+}
+
+.owned-filter input[type="checkbox"]:checked::before {
+  left: 28px;
+}
+
+.deckCards {
+  display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+}
+
+.deckCards .card-container {
+  position:relative;
+  margin:15px;
+}
+
+.deckCards .card-container .card-quantity {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 11;
+  background-color: black;
+  color: white;
+  height: 25px;
+  width: 25px;
+  border-radius: 1000px;
+  display: flex;
+  justify-content: center;
+}
+
+.deck-view {
+  padding: 20px;
+}
+
+.deck-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.menu-icon {
+  cursor: pointer;
+}
+
+.deck-preview {
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.deck-preview:hover {
+  transform: scale(1.05);
+}
+
+.deck-preview-image {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
