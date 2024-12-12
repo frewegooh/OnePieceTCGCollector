@@ -1,0 +1,40 @@
+# Privacy Policy for One Piece Card Tracker
+
+Last updated: [Current Date]
+
+## Introduction
+Welcome to One Piece Card Tracker. This privacy policy explains how we collect, use, and protect your information when you use our application.
+
+## Information We Collect
+We collect the following information:
+- Email address (when you sign in with Google)
+- Basic profile information from your Google account
+- Information about your card collection that you choose to save
+
+## How We Use Your Information
+We use your information to:
+- Authenticate you in the application
+- Save and manage your card collection
+- Provide personalized features
+
+## Data Storage and Security
+- Your data is stored securely using Firebase
+- We do not sell or share your personal information with third parties
+- We implement security measures to protect your data
+
+## Third-Party Services
+We use the following third-party services:
+- Google Authentication for sign-in
+- Firebase for data storage
+
+## Your Rights
+You have the right to:
+- Access your personal data
+- Request deletion of your data
+- Opt out of communications
+
+## Contact
+For any questions about this privacy policy, please contact [Your Email]
+
+## Changes to This Policy
+We may update this privacy policy from time to time. We will notify you of any changes by posting the new policy on this page.
