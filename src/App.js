@@ -14,6 +14,7 @@ import DeckLibrary from './components/DeckLibrary';
 import './App.css';
 import DeckView from './components/DeckView';
 import DeckEditor from './components/DeckEditor';
+import API_URL from './config';
 
 const App = () => {
     const [user, setUser] = useState(null);
@@ -157,19 +158,14 @@ const App = () => {
 
     const loadAllCardData = async () => {
         try {
-            const response = await fetch('http://localhost:5000/api/cards');
+            const response = await fetch(`${API_URL}/api/cards`);
             const allCardData = await response.json();
-            
-            // Log the first few cards to verify groupIds
-            //console.log('First few cards before filtering:', allCardData.slice(0, 3));
-            
             return allCardData;
         } catch (error) {
             console.error("Error fetching card data:", error);
             return [];
         }
     };
-
 
     useEffect(() => {
         const fetchData = async () => {

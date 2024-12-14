@@ -13,8 +13,10 @@ export const formatCardTextWithHTML = (text) => {
 };
 
 
-const getLocalImageUrl = (url) =>
-    `http://localhost:5000/images/${url.split('/').pop().replace('_200w.jpg', '_400w.jpg')}`;
+const getLocalImageUrl = (url) => {
+    const imageName = url.split('/').pop().replace('_200w.jpg', '_400w.jpg');
+    return `/images/${imageName}`;
+};
 
 
 const CardDetail = ({ card, onPrevious, onNext }) => {
