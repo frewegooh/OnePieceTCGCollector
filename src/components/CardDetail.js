@@ -68,7 +68,7 @@ const CardDetail = ({ card, onPrevious, onNext }) => {
             </div>
             <div className='cardInfo'>
 
-                <p><strong>Card Name:</strong> {card.name}</p>   
+                <p><strong>Name:</strong> {card.name}</p>   
 
                 {card.extColor && (
                     <p><strong>Color:</strong> {card.extColor.replace(/;/g, ' | ')}</p>
@@ -103,7 +103,7 @@ const CardDetail = ({ card, onPrevious, onNext }) => {
                 )}
 
                 {card.extNumber && (
-                    <p><strong>Car Number:</strong> {card.extNumber}</p>
+                    <p><strong>Number:</strong> {card.extNumber}</p>
                 )}
 
                 {card.extDescription && card.extDescription !== 'No description available.' && (

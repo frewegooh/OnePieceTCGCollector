@@ -93,8 +93,9 @@ nav a:hover {
 }
 
 .cardListCSS ul > li {
-  width: 21.33%;
-  padding: 2% 1%;
+  width: 20%;
+  max-width:200px;
+  padding: 0% 0% 1% 0%;
   margin: 0 2% 3% 0%;
   text-align: center;
   border-radius: 0px;
@@ -104,16 +105,18 @@ nav a:hover {
   box-shadow: 1px 3px 0px 0px rgba(255, 42, 109, 1);
   transition:300ms ease-in-out all;
   position:relative;
+  border-radius: 10px;
+  overflow:hidden;
 }
+.cardListCSS ul > li 
 
-
-.cardListCSS ul > li:nth-child(5n + 1) {
+/*.cardListCSS ul > li:nth-child(5n + 1) {
   margin-left:0px;
 }
 
 .cardListCSS ul > li:nth-child(4n) {
   margin-right:0px;
-}
+}*/
 
 .cardListCSS ul > li:hover {
   -webkit-box-shadow: 0px 0px 0px 0px rgba(255, 42, 109, 1);
@@ -124,7 +127,7 @@ nav a:hover {
 }
 
 .cardListCSS ul > li img {
-  max-width: 90%;
+  max-width: 100%;
   max-height: 275px;
 }
 
@@ -411,7 +414,7 @@ input[type=text]:focus {
 }
 
 .cardBuilderPar .cardListCard {
-  padding:0px 0px 10px 0px!important; 
+  padding:0px 0px 0px 0px!important; 
 }
 
 .rightCardPanel.cardListCSS, .deckBuilder {
@@ -582,4 +585,26 @@ input[type=text]:focus {
 
 .auth-link:hover {
   text-decoration: underline;
+}
+
+
+/* Deck Library */
+.deck-library .decks-grid .deck-preview {
+  max-width:250px;
+  position: relative;
+  border: 5px solid black;
+    border-radius: 20px;
+    overflow: hidden;
+}
+.deck-library .decks-grid .deck-preview h2 {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  text-align: center;
+  background-color: #000000d1;
+  color: white;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  padding-top: 10px;
+  padding-bottom: 10px;
 }

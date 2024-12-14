@@ -36,7 +36,15 @@ const CardList = ({
                         style={{ cursor: 'pointer' }}
                     >
                         
-                        <img src={getLocalImageUrl(card.imageUrl)} alt={card.cleanName} />
+                        <img 
+                            src={getLocalImageUrl(card.imageUrl)} 
+                            alt={card.cleanName} 
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onSecondaryButtonClick(card);
+                            }}
+                            style={{ cursor: 'pointer' }}
+                        />
                         <h3>{card.cleanName}</h3>
                         {showQuantity && updateQuantity && (
                             <div style={{ marginTop: '10px' }}>
@@ -55,7 +63,7 @@ const CardList = ({
                         )}
                         <div className="card-buttons">
                             {primaryButtonLabel && onPrimaryButtonClick && (
-                                <button onClick={(e) => {
+                                <button className='detailsBttn' onClick={(e) => {
                                     e.stopPropagation();
                                     onPrimaryButtonClick(card);
                                 }}>
@@ -63,7 +71,7 @@ const CardList = ({
                                 </button>
                             )}
                             {secondaryButtonLabel && onSecondaryButtonClick && (
-                                <button onClick={(e) => {
+                                <button className='viewBttn' onClick={(e) => {
                                     e.stopPropagation();
                                     onSecondaryButtonClick(card);
                                 }}>
