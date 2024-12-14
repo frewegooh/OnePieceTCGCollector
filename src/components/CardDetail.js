@@ -15,7 +15,7 @@ export const formatCardTextWithHTML = (text) => {
 
 const getLocalImageUrl = (url) => {
     const imageName = url.split('/').pop().replace('_200w.jpg', '_400w.jpg');
-    return `/images/${imageName}`;
+    return `${process.env.PUBLIC_URL}/images/${imageName}`;
 };
 
 
