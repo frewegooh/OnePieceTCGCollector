@@ -35,15 +35,17 @@ const DeckLibrary = ({ user }) => {
                 <div className="decks-grid">
                     {decks.map(deck => (
                         <div 
-                            key={deck.id} 
-                            className="deck-preview"
-                            onClick={() => navigate(`/deck/${deck.id}`)}
-                        >
-                            <img 
-                                src={deck.leader.imageUrl} 
-                                alt={deck.leader.name}
-                                className="deck-preview-image"
-                            />
+                                key={deck.id} 
+                                className="deck-preview"
+                                onClick={() => navigate(`/deck/${deck.id}`)}
+                            >
+                            {deck.leader && (
+                                <img 
+                                    src={deck.leader.imageUrl} 
+                                    alt={deck.leader.name}
+                                    className="deck-preview-image"
+                                />
+                            )}
                             <h2>{deck.name}</h2>
                         </div>
                     ))}
