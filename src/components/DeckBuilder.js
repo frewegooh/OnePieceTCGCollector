@@ -337,17 +337,6 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing }) => {
             </div>
             <div className="cardBuilderPar">
                 <div className="rightCardPanel cardListCSS">
-                    <CardList 
-                        cards={!leader 
-                            ? leaderCards.slice(0, displayedCards) 
-                            : filteredCards.slice(0, displayedCards)}
-                        onSecondaryButtonClick={!leader ? handlePickLeader : handleAddToDeck}
-                        secondaryButtonLabel="+"
-                        showQuantity={true}
-                        disableQuantityEdit={true}
-                    />
-                </div>
-                <div className="rightCardPanel cardListCSS">
                     <CardList
                         cards={showLeaderPicker 
                             ? leaderCards.slice(0, displayedCards) 

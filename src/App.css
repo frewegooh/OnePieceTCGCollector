@@ -517,3 +517,69 @@ input[type=text]:focus {
   height: auto;
   border-radius: 8px;
 }
+
+
+/* Login Page */
+.loginBackgroundImg {
+  min-width: 100vw;
+  min-height: 100vh;
+  background-image: url('../public/images/login_background.webp');
+  background-repeat: no-repeat;
+  background-size: cover;
+  -webkit-filter: blur(5px);
+  -moz-filter: blur(5px);
+  -o-filter: blur(5px);
+  -ms-filter: blur(5px);
+  filter: blur(5px);
+}
+.loginHolder {
+  min-width: 100vw;
+  min-height: 100vh;
+  /*background-image: url('../public/images/login_background.webp');
+  background-repeat: no-repeat;
+  background-size: cover;*/
+  
+}
+.loginHolder .logoHolder {
+  text-align:center;
+}
+.loginContainter {
+  background-color:#fffffff7;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  -webkit-box-shadow: 0px 0px 24px 0px rgba(0,0,0,0.18);
+  -moz-box-shadow: 0px 0px 24px 0px rgba(0,0,0,0.18);
+  box-shadow: 0px 0px 24px 0px rgba(0,0,0,0.18);
+  padding: 25px 45px;
+}
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.divider-text {
+  text-align: center;
+  font-size: 0.9rem;
+  margin: 1rem 0;
+}
+.switch-auth {
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.auth-link {
+  color: #007bff;
+  cursor: pointer;
+  margin-left: 5px;
+}
+
+.auth-link:hover {
+  text-decoration: underline;
+}

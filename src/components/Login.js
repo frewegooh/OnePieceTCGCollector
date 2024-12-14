@@ -1,12 +1,25 @@
 // src/components/Login.js
 import React, { useState } from 'react';
 import { auth } from '../firebase';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+
+    const googleProvider = new GoogleAuthProvider();
+
+    const handleGoogleLogin = async () => {
+        try {
+            await signInWithPopup(auth, googleProvider);
+            console.log("Logged in with Google!");
+        } catch (error) {
+            setError("Failed to log in with Google");
+            console.error("Google login error:", error);
+        }
+    };
+
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -29,26 +42,43 @@ const Login = () => {
     };
 
     return (
-        <div>
-            <h2>Login</h2>
+        
+        <div className='loginBody'>
+            
+            <div className='logoHolder'>
+                <img src="/Logo-Horz.png" alt="Logo" className="menuLogo" />
+            </div>
+            <h2>Welcome Back!</h2>
             {error && <p style={{ color: 'red' }}>{error}</p>}
             <form onSubmit={handleLogin}>
-                <input
-                    type="email"
-                    placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    autoComplete="username"
-                />
-                <input
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    autoComplete="current-password"
-                />
-                <button type="submit">Login</button>
+                <div className="form-group">
+                    <label>Email</label>
+                    <input
+                        type="email"
+                        placeholder="Enter email address"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        autoComplete="username"
+                    />
+                </div>
+                <div className="form-group">
+                    <label>Password</label>
+                    <input
+                        type="password"
+                        placeholder="Enter password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        autoComplete="current-password"
+                    />
+                </div>
+                <button type="submit" className="full-width">Login</button>
             </form>
+            <div className="social-login">
+                <p className="divider-text">Or, Login with</p>
+                <button onClick={handleGoogleLogin} className="full-width">
+                    Login with Google
+                </button>
+            </div>
         </div>
     );
 };

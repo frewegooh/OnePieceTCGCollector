@@ -38,6 +38,7 @@ const App = () => {
     const [availableCounterValues, setAvailableCounterValues] = useState([]);
     const [availableColors, setAvailableColors] = useState([]);
     const [showOwnedOnly, setShowOwnedOnly] = useState(false);
+    const [showLogin, setShowLogin] = useState(true);
 
 
     //const handleSearchChange = (query) => {
@@ -447,6 +448,9 @@ const App = () => {
     }, [cards]);
 
 
+
+
+
     /* End */
     
 
@@ -562,9 +566,33 @@ const App = () => {
                     </div>
                 ) : (
                     <div>
-                        <Login />
-                        <Register />
+                    <div className='loginHolder'>
+                    <div className='loginBackgroundImg'></div>
+                        <div className='loginContainter'>
+                            {showLogin ? (
+                                <>
+                                    <Login />
+                                    <p className="switch-auth">
+                                        Don't have an account? 
+                                        <span onClick={() => setShowLogin(false)} className="auth-link">
+                                            Register Here
+                                        </span>
+                                    </p>
+                                </>
+                            ) : (
+                                <>
+                                    <Register />
+                                    <p className="switch-auth">
+                                        Already have an account? 
+                                        <span onClick={() => setShowLogin(true)} className="auth-link">
+                                            Login here!
+                                        </span>
+                                    </p>
+                                </>
+                            )}
+                        </div>
                     </div>
+                </div>
                 )}
                 <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
                     {selectedCard && (
