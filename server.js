@@ -6,6 +6,9 @@ const axios = require('axios');
 const {Storage} = require('@google-cloud/storage');
 const storage = new Storage();
 const bucketName = 'card-tracker-images';
+let cardCache = null;
+let lastCacheTime = null;
+const CACHE_DURATION = 1000 * 60 * 60 * 24; // 24 hours
 
 const app = express();
 //const PORT = 5000;
@@ -63,27 +66,33 @@ app.use('/images', express.static(path.join(__dirname, 'images')));
 // Endpoint to get combined CSV data
 app.get('/api/cards', async (req, res) => {
     try {
-        const folderPath = path.join(__dirname, 'csv-files'); // Folder containing CSV files
+        // Return cached data if available and fresh
+        if (cardCache && lastCacheTime && (Date.now() - lastCacheTime < CACHE_DURATION)) {
+            console.log('Serving cards from cache');
+            return res.json(cardCache);
+        }
+        console.log('Reading cards from CSV files');
+        const folderPath = path.join(__dirname, 'csv-files');
         const files = fs.readdirSync(folderPath).filter(file => file.endsWith('.csv') && file !== 'OnePieceCardGameGroups.csv');
 
         let allCards = [];
-
         for (const file of files) {
             const filePath = path.join(folderPath, file);
             const csvText = fs.readFileSync(filePath, 'utf-8');
-
-            // Parse each CSV file and add `groupID` from filename (if available)
             const parsedData = Papa.parse(csvText, { header: true, skipEmptyLines: true }).data;
             allCards = allCards.concat(parsedData);
         }
 
-        res.json(allCards); // Send combined data as JSON
+        // Update cache
+        cardCache = allCards;
+        lastCacheTime = Date.now();
+
+        res.json(allCards);
     } catch (error) {
         console.error("Error reading CSV files:", error);
         res.status(500).json({ error: "Error reading CSV files" });
     }
 });
-
 // Endpoint to download and save a single image
 app.get('/download-image', async (req, res) => {
     const { imageUrl } = req.query;

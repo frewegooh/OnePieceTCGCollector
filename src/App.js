@@ -43,7 +43,7 @@ const App = () => {
     const [availableColors, setAvailableColors] = useState([]);
     const [showOwnedOnly, setShowOwnedOnly] = useState(false);
     //const [showLogin, setShowLogin] = useState(true);
-
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     //const handleSearchChange = (query) => {
     //    setSearchQuery(query);
@@ -297,7 +297,7 @@ const App = () => {
             );
     
         } catch (error) {
-            console.error('Firebase update error:', error);
+            //console.error('Firebase update error:', error);
         }
     };
 
@@ -462,22 +462,28 @@ const App = () => {
                                 <Link to="/">
                                     <img src="/Logo-Horz.png" alt="Logo" className="menuLogo" />
                                 </Link>
-                                <nav>
-                                    <Link to="/">Home</Link>
-                                    <Link to="/deck-builder">Deck Builder</Link>
-                                    <Link to="/my-decks">My Decks</Link>
+                                <div className="hamburger" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+                                    <span></span>
+                                    <span></span>
+                                    <span></span>
+                                </div>
+                                <nav className={isMenuOpen ? 'nav-active' : ''}>
+                                    <Link to="/" onClick={() => setIsMenuOpen(false)}>Home</Link>
+                                    <Link to="/deck-builder" onClick={() => setIsMenuOpen(false)}>Deck Builder</Link>
+                                    <Link to="/my-decks" onClick={() => setIsMenuOpen(false)}>My Decks</Link>
                                     {currentUser ? (
                                         <Link 
                                             className="logoutButton" 
                                             onClick={() => {
                                                 auth.signOut();
+                                                setIsMenuOpen(false);
                                                 window.location.reload();
                                             }}
                                         >
                                             Log Out
                                         </Link>
                                     ) : (
-                                        <Link to="/login">Login</Link>
+                                        <Link to="/login" onClick={() => setIsMenuOpen(false)}>Login</Link>
                                     )}
                                     {/* <button onClick={handleDownloadImages} style={{ marginTop: '20px' }}>
                                         Download Images
@@ -548,7 +554,7 @@ const App = () => {
                                         onOwnedOnlyChange={() => setShowOwnedOnly(!showOwnedOnly)}
                                     />
                                     } />
-                                <Route path="/my-decks" element={<DeckLibrary user={user} />} />    
+                                <Route path="/my-decks" element={<DeckLibrary user={user} />} />   
                                 <Route 
                                     path="/deck/:deckId" 
                                     element={
@@ -568,13 +574,8 @@ const App = () => {
                                         />
                                     } 
                                 />
-                            </Routes>
-                        </section>
-                        <section className="secBody">
-                            <Routes>
                                 <Route path="/login" element={<Login />} />
                                 <Route path="/register" element={<Register />} />
-                                {/* Your existing routes remain the same */}
                             </Routes>
                         </section>
                     </div>

@@ -3,251 +3,314 @@ import FilterSidebar from './FilterSidebar';
 import CardList from './CardList';
 import CardDetail from './CardDetail';
 import Modal from './Modal';
+import { addDoc, collection } from 'firebase/firestore';
+import { firestore } from '../firebase';
+import Papa from 'papaparse';
+import { useAuth } from '../contexts/AuthContext';
+import LoginPrompt from './LoginPrompt';
 
-const DeckBuilder = ({ cards }) => {
+
+const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing }) => {
+    // Add leaderCards variable
+    const { currentUser } = useAuth();
+    const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+    const leaderCards = cards.filter((card) => card.extCardType === 'Leader');
+
+    // State declarations
     const [filteredCards, setFilteredCards] = useState([]);
+    const [showLeaderPicker, setShowLeaderPicker] = useState(false);
     const [selectedCard, setSelectedCard] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-
-    // Filters
-    const [selectedColors, setSelectedColors] = useState([]);
+    const [displayedCards, setDisplayedCards] = useState(35);
+    const [availableColors, setAvailableColors] = useState([]);
     const [multicolorOnly, setMulticolorOnly] = useState(false);
-    const [selectedGroupID, setSelectedGroupID] = useState(null);
-    const [searchQuery, setSearchQuery] = useState('');
     const [selectedTypes, setSelectedTypes] = useState([]);
     const [selectedCostValues, setSelectedCostValues] = useState([]);
-    const [selectedAttributes, setSelectedAttributes] = useState([]);
+    const [availableCostValues, setAvailableCostValues] = useState([]);
     const [selectedPowerValues, setSelectedPowerValues] = useState([]);
     const [selectedCounterValues, setSelectedCounterValues] = useState([]);
-    const [availableColors, setAvailableColors] = useState([]);
-    const [availableCostValues, setAvailableCostValues] = useState([]);
-    const [availableAttributes, setAvailableAttributes] = useState([]);
-    const [availablePowerValues, setAvailablePowerValues] = useState([]);
     const [availableCounterValues, setAvailableCounterValues] = useState([]);
+    const [selectedAttributes, setSelectedAttributes] = useState([]);
+    const [selectedGroupID, setSelectedGroupID] = useState(null);
     const [groupMap, setGroupMap] = useState({});
+    const [availablePowerValues, setAvailablePowerValues] = useState([]);
+    const [availableAttributes, setAvailableAttributes] = useState([]);
+    const [leader, setLeader] = useState(null);
     const [deck, setDeck] = useState([]);
-    const [deckUrl, setDeckUrl] = useState('');
-    const [filters, setFilters] = useState({
-        selectedColors: [],
-        selectedGroupID: null,
-        selectedCostValues: [],
-        selectedPowerValues: [],
-        selectedAttributes: [],
-        selectedCounterValues: [],
-        searchQuery: '',
-        multicolorOnly: false,
-    });
+    const [selectedColors, setSelectedColors] = useState([]);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [showOwnedOnly, setShowOwnedOnly] = useState(false);
+    const [deckName, setDeckName] = useState('');
+    //const [deckUrl, setDeckUrl] = useState('');
 
-    const handleAddToDeck = (card) => {
-        const isLeader = card.extCardType === 'Leader';
-        const cardCount = deck.reduce((sum, deckCard) => sum + deckCard.quantity, 0);
-        const existingCard = deck.find((deckCard) => deckCard.extNumber === card.extNumber);
-    
-        // Enforce leader card constraint
-        if (isLeader) {
-            if (deck.some((deckCard) => deckCard.extCardType === 'Leader')) {
-                alert('You can only have one leader card.');
-                return;
+    // Infinite Scroll
+    useEffect(() => {
+        const cardListContainer = document.querySelector('.cardListCSS');
+        
+        const handleScroll = () => {
+            const { scrollTop, scrollHeight, clientHeight } = cardListContainer;
+            if (scrollTop + clientHeight >= scrollHeight - 50) {
+                setDisplayedCards(prevDisplayedCards => prevDisplayedCards + 25);
             }
-            setDeck([...deck, { ...card, quantity: 1 }]);
-            return;
-        }
+        };
     
-        // Enforce total card limit
-        if (cardCount >= 50) {
-            alert('Your deck cannot exceed 50 cards.');
-            return;
+        if (cardListContainer) {
+            cardListContainer.addEventListener('scroll', handleScroll);
         }
-    
-        // Enforce max copies per card
-        if (existingCard) {
-            if (existingCard.quantity >= 4) {
-                alert(`You can only add up to 4 copies of ${card.name}.`);
-                return;
-            }
-            setDeck(deck.map((deckCard) =>
-                deckCard.extNumber === card.extNumber
-                    ? { ...deckCard, quantity: deckCard.quantity + 1 }
-                    : deckCard
-            ));
-        } else {
-            setDeck([...deck, { ...card, quantity: 1 }]);
-        }
-    };
+    }, []);
 
-
-
-
-    const handleSaveDeck = async () => {
-        const deckData = { deck };
-        try {
-            // Save the deck to a backend (e.g., Firebase) and get a unique ID
-            const response = await fetch('/api/saveDeck', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(deckData),
+    // Update the useEffect that handles leader changes
+    useEffect(() => {
+        if (leader) {
+            const leaderColors = leader.extColor ? leader.extColor.split(';') : [];
+            const filtered = cards.filter((card) => {
+                // Only include Character, Stage, Event cards
+                const validType = ['Character', 'Stage', 'Event'].includes(card.extCardType);
+                
+                // Get the card's colors
+                const cardColors = card.extColor ? card.extColor.split(';') : [];
+                
+                // Card matches if it shares at least one color with the leader
+                const matchesColor = cardColors.some(color => leaderColors.includes(color));
+                
+                return validType && matchesColor;
             });
-            const { id } = await response.json();
-            const url = `${window.location.origin}/deck/${id}`;
-            setDeckUrl(url);
-            alert('Deck saved! Share your deck using this link: ' + url);
+            setFilteredCards(filtered);
+        } else {
+            setFilteredCards(cards);
+        }
+    }, [leader, cards]);
+
+    // Modify handleSaveDeck to check auth
+    const handleSaveDeck = async () => {
+        if (!currentUser) {
+            setShowLoginPrompt(true);
+            return;
+        }
+
+        if (!deckName.trim()) {
+            alert('Please enter a deck name');
+            return;
+        }
+
+        const deckData = {
+            userId: currentUser.uid,
+            name: deckName.trim(),
+            leaderId: leader.productId,
+            cardIds: deck.map(card => ({
+                productId: card.productId,
+                quantity: card.quantity
+            })),
+            timestamp: new Date().toISOString()
+        };
+
+        try {
+            const deckRef = await addDoc(collection(firestore, 'decks'), deckData);
+            const shareableUrl = `${window.location.origin}/deck/${deckRef.id}`;
+            alert(`Deck "${deckName}" saved! Share using: ${shareableUrl}`);
+            setDeckName('');
         } catch (error) {
-            alert('Failed to save the deck. Please try again.');
+            alert('Error saving deck');
+            console.error(error);
         }
     };
-    
-    
 
+        // Add this effect near your other useEffect hooks
+        useEffect(() => {
+            // When in editing mode and initial deck data is provided
+            if (initialDeck && isEditing) {
+                // Load the existing deck name
+                setDeckName(initialDeck.name);
+                // Set the deck's leader card
+                setLeader(initialDeck.leader);
+                // Load all the deck's cards
+                setDeck(initialDeck.cards);
+            }
+        }, [initialDeck, isEditing]);
+
+    // Update handlePickLeader to enforce single leader rule
+    const handlePickLeader = (card) => {
+        setLeader(card);
+        setShowLeaderPicker(false);
+    };
 
     useEffect(() => {
         if (cards.length > 0) {
-            // Populate filter options
+            // Extract unique color values
             const uniqueColors = [...new Set(cards.flatMap((card) => card.extColor?.split(';') || []))];
-            const uniqueCosts = [...new Set(cards.map((card) => parseInt(card.extCost, 10)).filter(Boolean))];
-            const uniqueAttributes = [...new Set(cards.map((card) => card.extAttribute).filter(Boolean))];
-            const uniquePowers = [...new Set(cards.map((card) => card.extPower).filter(Boolean))];
-            const uniqueCounters = [...new Set(cards.map((card) => card.extCounterplus).filter(Boolean))];
-            const groups = cards.reduce((acc, card) => {
-                if (card.groupID && card.groupName) acc[card.groupID] = card.groupName;
-                return acc;
-            }, {});
-
             setAvailableColors(uniqueColors);
+            // Extract unique cost values
+            const uniqueCosts = [...new Set(cards.map(card => parseInt(card.extCost, 10)).filter(cost => !isNaN(cost)))];
             setAvailableCostValues(uniqueCosts.sort((a, b) => a - b));
-            setAvailableAttributes(uniqueAttributes);
-            setAvailablePowerValues(uniquePowers);
-            setAvailableCounterValues(uniqueCounters);
-            setGroupMap(groups);
-        }
+
+            // Extract unique power values
+            const uniquePowers = [...new Set(cards.map(card => card.extPower).filter(power => power !== undefined && power !== null))];
+            setAvailablePowerValues(uniquePowers.sort((a, b) => a - b));
+
+            // Extract unique attribute values
+            const uniqueAttributes = [...new Set(cards.map(card => card.extAttribute).filter(attr => attr))];
+            setAvailableAttributes(uniqueAttributes.sort());
+
+            // Extract unique counter values
+            const uniqueCounters = [...new Set(cards.map(card => card.extCounterplus).filter(counter => counter !== undefined))];
+            setAvailableCounterValues(uniqueCounters.sort((a, b) => a - b));
+            }
     }, [cards]);
+
+    useEffect(() => {
+        const fetchGroupData = async () => {
+            const response = await fetch('/OnePieceCardGameGroups.csv');
+            const csvText = await response.text();
+            const parsedData = Papa.parse(csvText, { header: true, skipEmptyLines: true }).data;
+    
+            const groups = parsedData.reduce((map, group) => {
+                if (group.groupId && group.name) {
+                    map[group.groupId] = group.name;
+                }
+                return map;
+            }, {});
+            
+            setGroupMap(groups);
+        };
+        fetchGroupData();
+    }, []);
+
 
     useEffect(() => {
         const filtered = cards.filter((card) => {
             const cardColors = card.extColor ? card.extColor.split(';') : [];
-            const cardCost = card.extCost !== null && card.extCost !== undefined ? Number(card.extCost) : null;
-            const cardPower = card.extPower !== null && card.extPower !== undefined ? Number(card.extPower) : null;
-            const cardCounter = card.extCounterplus !== null && card.extCounterplus !== undefined ? Number(card.extCounterplus) : null;
-    
-            // Filters
-            const matchesColor =
-                selectedColors.length === 0 ||
-                selectedColors.some((color) => cardColors.includes(color));
-    
-            const matchesSearchQuery =
-                searchQuery.trim() === '' ||
-                card.name.toLowerCase().includes(searchQuery.trim().toLowerCase());
-    
+            const matchesColor = (() => {
+                if (multicolorOnly) {
+                    const isMulticolor = cardColors.length > 1;
+                    if (!isMulticolor) return false;
+                    if (selectedColors.length > 0) {
+                        return selectedColors.some((color) => cardColors.includes(color));
+                    }
+                    return true;
+                }
+                return (
+                    selectedColors.length === 0 ||
+                    selectedColors.some((color) => cardColors.includes(color))
+                );
+            })();
+
+            const matchesSearchQuery = searchQuery.trim().toLowerCase()
+                ? Object.values(card).some((value) =>
+                      value &&
+                      value.toString().toLowerCase().includes(searchQuery.trim().toLowerCase())
+                  )
+                : true;
+
             const matchesType =
                 selectedTypes.length === 0 || selectedTypes.includes(card.extCardType);
-    
-            const matchesCost =
-                selectedCostValues.length === 0 || // Match if no cost filter is applied
-                (cardCost !== null && selectedCostValues.map(Number).includes(cardCost)); // Match only defined costs
-    
-            const matchesPower =
-                selectedPowerValues.length === 0 || // Match if no power filter is applied
-                (cardPower !== null && selectedPowerValues.map(Number).includes(cardPower)); // Match only defined power values
-    
+
             const matchesCounter =
-                selectedCounterValues.length === 0 || // Match if no counter filter is applied
-                (cardCounter !== null && selectedCounterValues.map(Number).includes(cardCounter)); // Match only defined counter values
-    
+                selectedCounterValues.length === 0 || selectedCounterValues.includes(card.extCounterplus);
+
+            const matchesCost =
+                selectedCostValues.length === 0 ||
+                (card.extCost &&
+                    !isNaN(Number(card.extCost)) &&
+                    selectedCostValues.includes(String(card.extCost)));
+
+            const matchesPower =
+                selectedPowerValues.length === 0 || selectedPowerValues.includes(card.extPower);
+
+            const matchesGroup =
+                !selectedGroupID || String(card.groupID) === String(selectedGroupID);
+
             const matchesAttribute =
                 selectedAttributes.length === 0 ||
                 selectedAttributes.includes(card.extAttribute);
-    
-            const matchesGroup =
-                !selectedGroupID || String(card.groupID) === String(selectedGroupID);
-    
-            return (
+
+            const matchesOwned = !showOwnedOnly || card.quantity > 0;        
+
+            const isMatch =
                 matchesColor &&
                 matchesSearchQuery &&
                 matchesType &&
                 matchesCost &&
                 matchesPower &&
-                matchesCounter &&
+                matchesGroup &&
                 matchesAttribute &&
-                matchesGroup
-            );
+                matchesCounter&&
+                matchesOwned;
+            return isMatch;
         });
-    
+
         setFilteredCards(filtered);
     }, [
-        cards,
         selectedColors,
+        selectedCostValues,
+        selectedPowerValues,
+        selectedGroupID,
+        cards,
         multicolorOnly,
         searchQuery,
         selectedTypes,
-        selectedCostValues,
         selectedAttributes,
-        selectedPowerValues,
         selectedCounterValues,
-        selectedGroupID,
-        filters,
+        showOwnedOnly,
     ]);
+
+
+    const handleAddToDeck = (card) => {
+        // Check if trying to add a Leader when one already exists
+        if (card.extCardType === 'Leader') {
+            if (deck.some(c => c.extCardType === 'Leader')) {
+                alert('Only one Leader card is allowed in a deck');
+                return;
+            }
+        }
     
+        // Rest of your existing handleAddToDeck logic
+        const sameNumberCards = deck.filter((c) => c.extNumber === card.extNumber);
+        const totalCount = sameNumberCards.reduce((sum, c) => sum + c.quantity, 0);
     
-    const handleFilterChange = (updatedFilters) => {
-        setFilters((prevFilters) => ({ ...prevFilters, ...updatedFilters }));
+        if (totalCount >= 4) {
+            alert('Maximum 4 cards with same number allowed');
+            return;
+        }
+    
+        setDeck((prev) => {
+            const existing = prev.find((c) => c.productId === card.productId);
+            if (existing) {
+                return prev.map((c) =>
+                    c.productId === card.productId
+                        ? { ...c, quantity: c.quantity + 1 }
+                        : c
+                );
+            }
+            return [...prev, { ...card, quantity: 1 }];
+        });
     };
 
     const handleRemoveFromDeck = (card) => {
-        setDeck(deck
-            .map((deckCard) => {
-                if (deckCard.extNumber === card.extNumber) {
-                    return { ...deckCard, quantity: deckCard.quantity - 1 };
-                }
-                return deckCard;
-            })
-            .filter((deckCard) => deckCard.quantity > 0)
+        setDeck(
+            deck
+                .map((deckCard) => {
+                    if (deckCard.productId === card.productId) {
+                        return { ...deckCard, quantity: deckCard.quantity - 1 };
+                    }
+                    return deckCard;
+                })
+                .filter((deckCard) => deckCard.quantity > 0)
         );
     };
 
-    
-    
-    useEffect(() => {
-        const nonLeaders = cards.filter((card) => card.extCardType !== 'Leader');
-    
-        const uniqueColors = [
-            ...new Set(nonLeaders.flatMap((card) => card.extColor?.split(';') || [])),
-        ];
-        const uniqueCosts = [
-            ...new Set(nonLeaders.map((card) => parseInt(card.extCost, 10)).filter((value) => !isNaN(value))),
-        ];
-        const uniquePowers = [
-            ...new Set(nonLeaders.map((card) => parseInt(card.extPower, 10)).filter((value) => !isNaN(value))),
-        ];
-        const uniqueCounters = [
-            ...new Set(nonLeaders.map((card) => parseInt(card.extCounterplus, 10)).filter((value) => !isNaN(value))),
-        ];
-        const uniqueAttributes = [...new Set(nonLeaders.map((card) => card.extAttribute).filter(Boolean))];
-        const groups = nonLeaders.reduce((acc, card) => {
-            if (card.groupID && card.groupName) acc[card.groupID] = card.groupName;
-            return acc;
-        }, {});
-    
-        setAvailableColors(uniqueColors);
-        setAvailableCostValues(uniqueCosts.sort((a, b) => a - b));
-        setAvailablePowerValues(uniquePowers.sort((a, b) => a - b));
-        setAvailableCounterValues(uniqueCounters.sort((a, b) => a - b));
-        setAvailableAttributes(uniqueAttributes);
-        setGroupMap(groups);
-    }, [cards]);
-    
-
-
+    // Add card detail viewing functionality
     const handleViewDetails = (card) => {
-        setSelectedCard(card);
+        const cardIndex = filteredCards.findIndex(c => c.productId === card.productId);
+        setSelectedCard({ ...card, index: cardIndex });
         setIsModalOpen(true);
     };
 
-    const handleCloseModal = () => {
-        setSelectedCard(null);
-        setIsModalOpen(false);
-    };
 
+
+
+
+    // Return JSX
     return (
-        
         <div className="deck-builder">
             <div className="sideFilterPar">
                 <FilterSidebar
@@ -266,47 +329,102 @@ const DeckBuilder = ({ cards }) => {
                     selectedCostValues={selectedCostValues}
                     onCostChange={setSelectedCostValues}
                     availableCostValues={availableCostValues}
-                    selectedAttributes={selectedAttributes}
-                    onAttributeChange={setSelectedAttributes}
-                    availableAttributes={availableAttributes}
                     selectedPowerValues={selectedPowerValues}
                     onPowerChange={setSelectedPowerValues}
                     availablePowerValues={availablePowerValues}
                     selectedCounterValues={selectedCounterValues}
                     onCounterChange={setSelectedCounterValues}
                     availableCounterValues={availableCounterValues}
+                    selectedAttributes={selectedAttributes}
+                    onAttributeChange={setSelectedAttributes}
+                    availableAttributes={availableAttributes}
                     selectedGroupID={selectedGroupID}
                     onGroupChange={setSelectedGroupID}
                     groupMap={groupMap}
+                    showOwnedOnly={showOwnedOnly}
+                    onOwnedOnlyChange={() => setShowOwnedOnly(!showOwnedOnly)}
                 />
             </div>
-            <div className='cardBuilderPar'>
+            <div className="cardBuilderPar">
                 <div className="rightCardPanel cardListCSS">
-                        <CardList
-                            cards={filteredCards}
-                            onSecondaryButtonClick={handleAddToDeck}
-                            primaryButtonLabel="Add to Deck"
-                        />
-                    </div>
-                    <div className='deckBuilder'>
-                    <h2>Your Deck ({deck.reduce((sum, card) => sum + card.quantity, 0)}/50)</h2>
                     <CardList
-                        cards={deck}
-                        onPrimaryButtonClick={handleRemoveFromDeck}
-                        primaryButtonLabel="Remove from Deck"
+                        cards={showLeaderPicker 
+                            ? leaderCards.slice(0, displayedCards) 
+                            : filteredCards.slice(0, displayedCards)}
+                        onSecondaryButtonClick={showLeaderPicker ? handlePickLeader : handleAddToDeck}
+                        onPrimaryButtonClick={handleViewDetails}
+                        primaryButtonLabel="Details"
+                        secondaryButtonLabel="+"
+                        showQuantity={true}
+                        disableQuantityEdit={true}
+                        enableCardClick={true}
                     />
+                </div>
 
-                    <button onClick={handleSaveDeck}>Save Deck</button>
-                    {deckUrl && <div>Shareable Link: <a href={deckUrl}>{deckUrl}</a></div>}
+                <div className="deckSection">
+
+                    <input
+                        type="text"
+                        value={deckName}
+                        onChange={(e) => setDeckName(e.target.value)}
+                        placeholder="Enter deck name"
+                        className="deck-name-input"
+                    />
+                    <button 
+                        onClick={handleSaveDeck} 
+                        disabled={!leader || deck.length === 0 || !deckName.trim()}
+                    >
+                        {currentUser ? 'Save Deck' : 'Login to Save Deck'}
+                    </button>
+
+                    <LoginPrompt 
+                open={showLoginPrompt} 
+                onClose={() => setShowLoginPrompt(false)} 
+            />
+
+                    <h2>Your Deck ({deck.reduce((sum, card) => sum + card.quantity, 0)}/50)</h2>
+                    {!leader ? (
+                        <button onClick={() => setShowLeaderPicker(true)}>Pick Leader</button>
+                    ) : (
+                        <>
+                            <div className="leaderSection">
+                                <h3>Leader</h3>
+                                <CardList 
+                                    cards={[leader]} 
+                                    showQuantity={false}
+                                    onSecondaryButtonClick={() => {
+                                        setLeader(null);
+                                        setShowLeaderPicker(false);
+                                    }}
+                                    secondaryButtonLabel="-"
+                                />
+                            </div>
+                        </>
+                    )}
+                    {deck.length > 0 && (
+                        <div className="deckCards">
+                        {deck.sort((a, b) => {
+                            if (a.extCardType === 'Leader') return -1;
+                            if (b.extCardType === 'Leader') return 1;
+                            return 0;
+                        }).map(card => (
+                            <div key={card.productId} className="card-container">
+                                <div className="card-quantity">{card.quantity}</div>
+                                <img src={card.imageUrl} alt={card.name} />
+                                <div className="card-controls">
+                                    <button onClick={() => handleRemoveFromDeck(card)}>-</button>
+                                    <button onClick={() => handleAddToDeck(card)}>+</button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                    )}
                 </div>
             </div>
-            <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
+            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
                 {selectedCard && <CardDetail card={selectedCard} />}
             </Modal>
-
         </div>
-        
-        
     );
 };
 

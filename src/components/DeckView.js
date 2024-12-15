@@ -6,23 +6,50 @@ import { firestore } from '../firebase';
 import { Menu, MenuItem } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ShareModal from './ShareModal';
+import API_URL from '../config';
 
 const DeckView = () => {
     const { deckId } = useParams();
     const navigate = useNavigate();
     const [deck, setDeck] = useState(null);
+    const [cardData, setCardData] = useState([]);
     const [anchorEl, setAnchorEl] = useState(null);
     const [showShareModal, setShowShareModal] = useState(false);
+
+    // Fetch card data from server
+    useEffect(() => {
+        fetch(`${API_URL}/api/cards`)
+            .then(response => response.json())
+            .then(data => setCardData(data));
+    }, []);
 
     useEffect(() => {
         const fetchDeck = async () => {
             const deckDoc = await getDoc(doc(firestore, 'decks', deckId));
-            if (deckDoc.exists()) {
-                setDeck({ id: deckDoc.id, ...deckDoc.data() });
+            if (deckDoc.exists() && cardData.length > 0) {
+                const deckData = deckDoc.data();
+                // Find leader card
+                const leaderCard = cardData.find(card => card.productId === deckData.leaderId);
+                
+                // Map card IDs to full card data
+                const cardsWithData = deckData.cardIds.map(cardId => {
+                    const card = cardData.find(c => c.productId === cardId.productId);
+                    return {
+                        ...card,
+                        quantity: cardId.quantity
+                    };
+                });
+
+                setDeck({
+                    id: deckDoc.id,
+                    ...deckData,
+                    leader: leaderCard,
+                    cards: cardsWithData
+                });
             }
         };
         fetchDeck();
-    }, [deckId]);
+    }, [deckId, cardData]);
 
     const handleMenuClick = (event) => {
         setAnchorEl(event.currentTarget);

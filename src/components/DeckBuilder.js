@@ -21,7 +21,7 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing }) => {
     const [showLeaderPicker, setShowLeaderPicker] = useState(false);
     const [selectedCard, setSelectedCard] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [displayedCards, setDisplayedCards] = useState(25);
+    const [displayedCards, setDisplayedCards] = useState(35);
     const [availableColors, setAvailableColors] = useState([]);
     const [multicolorOnly, setMulticolorOnly] = useState(false);
     const [selectedTypes, setSelectedTypes] = useState([]);
