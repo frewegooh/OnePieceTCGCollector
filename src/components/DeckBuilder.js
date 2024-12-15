@@ -6,9 +6,14 @@ import Modal from './Modal';
 import { addDoc, collection } from 'firebase/firestore';
 import { firestore } from '../firebase';
 import Papa from 'papaparse';
+import { useAuth } from '../contexts/AuthContext';
+import LoginPrompt from './LoginPrompt';
+
 
 const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing }) => {
     // Add leaderCards variable
+    const { currentUser } = useAuth();
+    const [showLoginPrompt, setShowLoginPrompt] = useState(false);
     const leaderCards = cards.filter((card) => card.extCardType === 'Leader');
 
     // State declarations
@@ -76,15 +81,20 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing }) => {
         }
     }, [leader, cards]);
 
-    // Modify the handleSaveDeck function to handle both new decks and updates
+    // Modify handleSaveDeck to check auth
     const handleSaveDeck = async () => {
-        if (!user || !deckName.trim()) {
-            alert('Please enter a deck name and ensure you are logged in');
+        if (!currentUser) {
+            setShowLoginPrompt(true);
+            return;
+        }
+
+        if (!deckName.trim()) {
+            alert('Please enter a deck name');
             return;
         }
 
         const deckData = {
-            userId: user.uid,
+            userId: currentUser.uid,
             name: deckName.trim(),
             leaderId: leader.productId,
             cardIds: deck.map(card => ({
@@ -364,8 +374,13 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing }) => {
                         onClick={handleSaveDeck} 
                         disabled={!leader || deck.length === 0 || !deckName.trim()}
                     >
-                        Save Deck
+                        {currentUser ? 'Save Deck' : 'Login to Save Deck'}
                     </button>
+
+                    <LoginPrompt 
+                open={showLoginPrompt} 
+                onClose={() => setShowLoginPrompt(false)} 
+            />
 
                     <h2>Your Deck ({deck.reduce((sum, card) => sum + card.quantity, 0)}/50)</h2>
                     {!leader ? (

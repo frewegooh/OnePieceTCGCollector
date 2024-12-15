@@ -2,11 +2,14 @@
 import React, { useState } from 'react';
 import { auth } from '../firebase';
 import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const navigate = useNavigate();
 
     const googleProvider = new GoogleAuthProvider();
 
@@ -14,6 +17,7 @@ const Login = () => {
         try {
             await signInWithPopup(auth, googleProvider);
             console.log("Logged in with Google!");
+            navigate('/'); // Redirects to homepage
         } catch (error) {
             setError("Failed to log in with Google");
             console.error("Google login error:", error);
@@ -27,6 +31,7 @@ const Login = () => {
         try {
             await signInWithEmailAndPassword(auth, email, password);
             console.log("Logged in!");
+            navigate('/');
         } catch (error) {
             if (error.code === 'auth/wrong-password') {
                 setError("Incorrect password. Please try again.");
@@ -44,10 +49,6 @@ const Login = () => {
     return (
         
         <div className='loginBody'>
-            
-            <div className='logoHolder'>
-                <img src="/Logo-Horz.png" alt="Logo" className="menuLogo" />
-            </div>
             <h2>Welcome Back!</h2>
             {error && <p style={{ color: 'red' }}>{error}</p>}
             <form onSubmit={handleLogin}>
@@ -78,6 +79,10 @@ const Login = () => {
                 <button onClick={handleGoogleLogin} className="full-width">
                     Login with Google
                 </button>
+            </div>
+            <div className="register-prompt">
+                <p>Don't have an account?</p>
+                <Link to="/register">Register here</Link>
             </div>
         </div>
     );

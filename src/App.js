@@ -15,8 +15,12 @@ import './App.css';
 import DeckView from './components/DeckView';
 import DeckEditor from './components/DeckEditor';
 import API_URL from './config';
+import { useAuth } from './contexts/AuthContext';
+import LoginPrompt from './components/LoginPrompt';
 
 const App = () => {
+    const { currentUser } = useAuth();
+    const [showLoginPrompt, setShowLoginPrompt] = useState(false);
     const [user, setUser] = useState(null);
     const [cards, setCards] = useState([]);
     const [filteredCards, setFilteredCards] = useState([]);
@@ -38,7 +42,7 @@ const App = () => {
     const [availableCounterValues, setAvailableCounterValues] = useState([]);
     const [availableColors, setAvailableColors] = useState([]);
     const [showOwnedOnly, setShowOwnedOnly] = useState(false);
-    const [showLogin, setShowLogin] = useState(true);
+    //const [showLogin, setShowLogin] = useState(true);
 
 
     //const handleSearchChange = (query) => {
@@ -301,12 +305,7 @@ const App = () => {
         const unsubscribe = auth.onAuthStateChanged(async (user) => {
             setUser(user);
             if (user) {
-                //console.log('User authenticated, loading data for:', user.uid);
                 await loadUserCardData(user.uid);
-            } else {
-                //console.log('No user authenticated');
-                setCards([]);
-                setFilteredCards([]);
             }
         });
         return unsubscribe;
@@ -457,7 +456,6 @@ const App = () => {
     return (
         <Router>
             <div className="App" style={{ display: 'flex' }}>
-                {user ? (
                     <div>
                         <div className="navHolder">
                             <header>
@@ -468,10 +466,19 @@ const App = () => {
                                     <Link to="/">Home</Link>
                                     <Link to="/deck-builder">Deck Builder</Link>
                                     <Link to="/my-decks">My Decks</Link>
-                                    <Link className="logoutButton" onClick={() => auth.signOut()}>
-                                        Log Out
-                                    </Link>
-
+                                    {currentUser ? (
+                                        <Link 
+                                            className="logoutButton" 
+                                            onClick={() => {
+                                                auth.signOut();
+                                                window.location.reload();
+                                            }}
+                                        >
+                                            Log Out
+                                        </Link>
+                                    ) : (
+                                        <Link to="/login">Login</Link>
+                                    )}
                                     {/* <button onClick={handleDownloadImages} style={{ marginTop: '20px' }}>
                                         Download Images
                                     </button> */}
@@ -523,10 +530,10 @@ const App = () => {
                                                     <CardList
                                                         cards={filteredCards.slice(0, displayedCards)}
                                                         updateQuantity={updateQuantity}
-                                                        onSecondaryButtonClick={handleViewDetails}
+                                                        onSecondaryButtonClick={handleViewDetails} // This triggers the modal
                                                         secondaryButtonLabel="View Details"
                                                         enableCardClick={true}
-                                                        showQuantity={true} // Add this prop
+                                                        showQuantity={true}
                                                     />
                                                 </div>
                                             </div>
@@ -563,46 +570,27 @@ const App = () => {
                                 />
                             </Routes>
                         </section>
+                        <section className="secBody">
+                            <Routes>
+                                <Route path="/login" element={<Login />} />
+                                <Route path="/register" element={<Register />} />
+                                {/* Your existing routes remain the same */}
+                            </Routes>
+                        </section>
                     </div>
-                ) : (
-                    <div>
-                    <div className='loginHolder'>
-                    <div className='loginBackgroundImg'></div>
-                        <div className='loginContainter'>
-                            {showLogin ? (
-                                <>
-                                    <Login />
-                                    <p className="switch-auth">
-                                        Don't have an account? 
-                                        <span onClick={() => setShowLogin(false)} className="auth-link">
-                                            Register Here
-                                        </span>
-                                    </p>
-                                </>
-                            ) : (
-                                <>
-                                    <Register />
-                                    <p className="switch-auth">
-                                        Already have an account? 
-                                        <span onClick={() => setShowLogin(true)} className="auth-link">
-                                            Login here!
-                                        </span>
-                                    </p>
-                                </>
-                            )}
-                        </div>
-                    </div>
-                </div>
+                <LoginPrompt 
+                    open={showLoginPrompt} 
+                    onClose={() => setShowLoginPrompt(false)} 
+                />
+                            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+                {selectedCard && (
+                    <CardDetail 
+                        card={selectedCard} 
+                        onPrevious={handlePreviousCard} 
+                        onNext={handleNextCard} 
+                    />
                 )}
-                <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-                    {selectedCard && (
-                        <CardDetail 
-                            card={selectedCard} 
-                            onPrevious={handlePreviousCard} 
-                            onNext={handleNextCard} 
-                        />
-                    )}
-                </Modal>
+            </Modal>
             </div>
         </Router>
     );

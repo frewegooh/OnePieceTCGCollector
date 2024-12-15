@@ -26,6 +26,25 @@ const DeckLibrary = ({ user }) => {
         fetchUserDecks();
     }, [user]);
 
+
+    if (!user) {
+        return (
+            <div className="deck-library">
+                <div className="login-prompt">
+                    <h2>Login Required</h2>
+                    <p>Create an account or login to access this feature!</p>
+                    <button 
+                        className="login-button"
+                        onClick={() => navigate('/login')}
+                    >
+                        Go to Login
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+
     return (
         <div className="deck-library">
             <h1>My Decks</h1>

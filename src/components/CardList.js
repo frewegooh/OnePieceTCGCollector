@@ -1,9 +1,6 @@
-import React, { useEffect } from 'react';
-
-const getLocalImageUrl = (url) => {
-    const imageName = url.split('/').pop().replace('_200w.jpg', '_400w.jpg');
-    return `${process.env.PUBLIC_URL}/images/${imageName}`;
-};
+import React, { useEffect, useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import LoginPrompt from './LoginPrompt';
 
 const CardList = ({ 
     cards, 
@@ -13,76 +10,95 @@ const CardList = ({
     secondaryButtonLabel, 
     primaryButtonLabel,
     enableCardClick,
-    showQuantity = true // Add this prop with default value
+    showQuantity = true,    
 }) => {
+    const { currentUser } = useAuth();
+    const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+
+    const getLocalImageUrl = (url) => {
+        const imageName = url.split('/').pop().replace('_200w.jpg', '_400w.jpg');
+        return `${process.env.PUBLIC_URL}/images/${imageName}`;
+    };
+
     useEffect(() => {
         //console.log('CardList mounted/updated with cards:', cards?.length);
     }, [cards]);
 
     if (!cards?.length) {
-        //console.log('Rendering loading state because cards length is:', cards?.length);
         return <div>No Cards Found</div>;
     }
 
-    
+    const handleQuantityUpdate = (productId, newQuantity) => {
+        if (currentUser) {
+            updateQuantity(productId, newQuantity);
+        } else {
+            setShowLoginPrompt(true);
+        }
+    };   
 
     return (
-        <div>
-            <ul>
-                {cards.map((card, index) => (
-                    <li
-                        key={card.productId || index}
-                        className="cardListCard"
-                        style={{ cursor: 'pointer' }}
-                    >
-                        
-                        <img 
-                            src={getLocalImageUrl(card.imageUrl)} 
-                            alt={card.cleanName} 
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onSecondaryButtonClick(card);
-                            }}
+        <>
+            <div>
+                <ul>
+                    {cards.map((card, index) => (
+                        <li
+                            key={card.productId || index}
+                            className="cardListCard"
                             style={{ cursor: 'pointer' }}
-                        />
-                        <h3>{card.cleanName}</h3>
-                        {showQuantity && updateQuantity && (
-                            <div style={{ marginTop: '10px' }}>
-                                <label>
-                                    Owned:
-                                    <input
-                                        type="number"
-                                        value={card.quantity || 0}
-                                        onChange={(e) => updateQuantity(card.productId, parseInt(e.target.value, 10) || 0)}
-                                        style={{ width: '50px', marginLeft: '5px' }}
-                                        min="0"
-                                        onClick={(e) => e.stopPropagation()}Q
-                                    />
-                                </label>
-                            </div>
-                        )}
-                        <div className="card-buttons">
-                            {primaryButtonLabel && onPrimaryButtonClick && (
-                                <button className='detailsBttn' onClick={(e) => {
-                                    e.stopPropagation();
-                                    onPrimaryButtonClick(card);
-                                }}>
-                                    {primaryButtonLabel}
-                                </button>
-                            )}
-                            {secondaryButtonLabel && onSecondaryButtonClick && (
-                                <button className='viewBttn' onClick={(e) => {
+                        >
+                            <img 
+                                src={getLocalImageUrl(card.imageUrl)} 
+                                alt={card.cleanName} 
+                                onClick={(e) => {
                                     e.stopPropagation();
                                     onSecondaryButtonClick(card);
-                                }}>
-                                    {secondaryButtonLabel}
-                                </button>
+                                }}
+                                style={{ cursor: 'pointer' }}
+                            />
+                            <h3>{card.cleanName}</h3>
+                            {showQuantity && updateQuantity && (
+                                <div style={{ marginTop: '10px' }}>
+                                    <label>
+                                        Owned:
+                                        <input
+                                            type="number"
+                                            value={card.quantity || 0}
+                                            onChange={(e) => handleQuantityUpdate(card.productId, parseInt(e.target.value, 10) || 0)}
+                                            style={{ width: '50px', marginLeft: '5px' }}
+                                            min="0"
+                                            onClick={(e) => e.stopPropagation()}
+                                        />
+                                    </label>
+                                </div>
                             )}
-                        </div>
-                    </li>
-                ))}
-            </ul>
-        </div>
+                            <div className="card-buttons">
+                                {primaryButtonLabel && onPrimaryButtonClick && (
+                                    <button className='detailsBttn' onClick={(e) => {
+                                        e.stopPropagation();
+                                        onPrimaryButtonClick(card);
+                                    }}>
+                                        {primaryButtonLabel}
+                                    </button>
+                                )}
+                                {secondaryButtonLabel && onSecondaryButtonClick && (
+                                    <button className='viewBttn' onClick={(e) => {
+                                        e.stopPropagation();
+                                        onSecondaryButtonClick(card);
+                                    }}>
+                                        {secondaryButtonLabel}
+                                    </button>
+                                )}
+                            </div>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+            <LoginPrompt 
+                open={showLoginPrompt} 
+                onClose={() => setShowLoginPrompt(false)} 
+            />
+        </>
     );
 };
+
 export default CardList;
