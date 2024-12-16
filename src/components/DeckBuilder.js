@@ -10,7 +10,7 @@ import { useAuth } from '../contexts/AuthContext';
 import LoginPrompt from './LoginPrompt';
 
 
-const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing }) => {
+const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl }) => {
     // Add leaderCards variable
     const { currentUser } = useAuth();
     const [showLoginPrompt, setShowLoginPrompt] = useState(false);
@@ -410,7 +410,7 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing }) => {
                         }).map(card => (
                             <div key={card.productId} className="card-container">
                                 <div className="card-quantity">{card.quantity}</div>
-                                <img src={card.imageUrl} alt={card.name} />
+                                <img src={getImageUrl(card.imageUrl)} alt={card.name} />
                                 <div className="card-controls">
                                     <button onClick={() => handleRemoveFromDeck(card)}>-</button>
                                     <button onClick={() => handleAddToDeck(card)}>+</button>

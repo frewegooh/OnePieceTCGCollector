@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import API_URL from '../config';
 
 // Add cards to the props
-const DeckLibrary = ({ user }) => {
+const DeckLibrary = ({ user, getImageUrl }) => {
     const [decks, setDecks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [cardData, setCardData] = useState([]);
@@ -87,10 +87,10 @@ const DeckLibrary = ({ user }) => {
                         >
                             {deck.leaderImageUrl && (
                                 <img 
-                                    src={deck.leaderImageUrl}
+                                    src={getImageUrl(deck.leaderImageUrl)}
                                     alt="Deck Leader"
                                     className="deck-preview-image"
-                                />
+                                  />
                             )}
                             <h2>{deck.name}</h2>
                         </div>

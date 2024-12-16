@@ -9,7 +9,7 @@ import ShareModal from './ShareModal';
 import API_URL from '../config';
 import { auth } from '../firebase';
 
-const DeckView = () => {
+const DeckView = ({ getImageUrl }) => {
     const { deckId } = useParams();
     const navigate = useNavigate();
     const [deck, setDeck] = useState(null);
@@ -107,7 +107,7 @@ const DeckView = () => {
                 <h2>Leader</h2>
                 <div className="card-container">
                     <img 
-                        src={deck.leader.imageUrl} 
+                        src={getImageUrl(deck.leader.imageUrl)} 
                         alt={deck.leader.name}
                         className="card-image"
                     />
@@ -121,7 +121,7 @@ const DeckView = () => {
                         <div key={index} className="card-container">
                             <div className="card-quantity">{card.quantity}</div>
                             <img 
-                                src={card.imageUrl} 
+                                src={getImageUrl(card.imageUrl)} 
                                 alt={card.name}
                                 className="card-image"
                             />

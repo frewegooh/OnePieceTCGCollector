@@ -17,6 +17,7 @@ import DeckEditor from './components/DeckEditor';
 import API_URL from './config';
 import { useAuth } from './contexts/AuthContext';
 import LoginPrompt from './components/LoginPrompt';
+import { getImageUrl } from './config';
 
 const App = () => {
     const { currentUser } = useAuth();
@@ -185,7 +186,9 @@ const App = () => {
 
     useEffect(() => {
         const fetchData = async () => {
+            console.log('Fetching card data...');
             const allCards = await loadAllCardData();
+            console.log('Cards loaded:', allCards.length);
             setCards(allCards);
             setFilteredCards(allCards);
         };
@@ -553,6 +556,7 @@ const App = () => {
                                                         secondaryButtonLabel="View Details"
                                                         enableCardClick={true}
                                                         showQuantity={true}
+                                                        getImageUrl={getImageUrl}
                                                     />
                                                 </div>
                                             </div>
@@ -565,15 +569,17 @@ const App = () => {
                                         user={user}
                                         showOwnedOnly={showOwnedOnly}
                                         onOwnedOnlyChange={() => setShowOwnedOnly(!showOwnedOnly)}
+                                        getImageUrl={getImageUrl}
                                     />
                                     } />
-                                <Route path="/my-decks" element={<DeckLibrary user={user} />} />   
+                                <Route path="/my-decks" element={<DeckLibrary user={user} getImageUrl={getImageUrl} />} />   
                                 <Route 
                                     path="/deck/:deckId" 
                                     element={
                                         <DeckView 
                                             mergeDeckWithCurrentCardData={mergeDeckWithCurrentCardData}
                                             cards={cards}
+                                            getImageUrl={getImageUrl}
                                         />
                                     } 
                                 />

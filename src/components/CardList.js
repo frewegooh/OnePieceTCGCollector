@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import LoginPrompt from './LoginPrompt';
+import { getImageUrl } from '../config';
 
 const CardList = ({ 
     cards, 
@@ -47,7 +48,7 @@ const CardList = ({
                             style={{ cursor: 'pointer' }}
                         >
                             <img 
-                                src={getLocalImageUrl(card.imageUrl)} 
+                                src={getImageUrl(card.imageUrl)} 
                                 alt={card.cleanName} 
                                 onClick={(e) => {
                                     e.stopPropagation();

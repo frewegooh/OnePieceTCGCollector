@@ -105,46 +105,6 @@ app.get('/api/cards', async (req, res) => {
         res.status(500).json({ error: "Error reading CSV files" });
     }
 });
-// Endpoint to download and save a single image
-app.get('/download-image', async (req, res) => {
-    const { imageUrl } = req.query;
-
-    if (!imageUrl) {
-        return res.status(400).send('Image URL is required.');
-    }
-
-    // Modify the URL to use the _400w.jpg variant
-    const updatedUrl = imageUrl.replace('_200w.jpg', '_400w.jpg');
-    const imageName = path.basename(updatedUrl);
-    const localPath = path.join(__dirname, 'images', imageName);
-
-    try {
-        // Check if the image already exists locally
-        if (await fs.pathExists(localPath)) {
-            return res.status(200).send(`/images/${imageName}`);
-        }
-
-        // Download the image
-        const response = await axios({
-            method: 'GET',
-            url: updatedUrl,
-            responseType: 'stream',
-        });
-
-        // Save the image locally
-        const writer = fs.createWriteStream(localPath);
-        response.data.pipe(writer);
-
-        writer.on('finish', () => res.status(200).send(`/images/${imageName}`));
-        writer.on('error', (error) => {
-            console.error("Error saving image:", error);
-            res.status(500).send('Error saving the image.');
-        });
-    } catch (error) {
-        console.error("Error downloading image:", error);
-        res.status(500).send('Error downloading the image.');
-    }
-});
 
 // Endpoint to download all images for cards
 app.post('/api/download-all-images', async (req, res) => {
