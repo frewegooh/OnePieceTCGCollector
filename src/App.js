@@ -44,6 +44,7 @@ const App = () => {
     const [showOwnedOnly, setShowOwnedOnly] = useState(false);
     //const [showLogin, setShowLogin] = useState(true);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const ADMIN_USER_ID = 'uuBS4Z3PcHNLZyzNKfWLw2Oyrg52';
 
     //const handleSearchChange = (query) => {
     //    setSearchQuery(query);
@@ -61,22 +62,30 @@ const App = () => {
     //    }
     //};
 
-    //const handleDownloadImages = async () => {
-    //    try {
-    //        const response = await fetch('http://localhost:5000/api/download-all-images', {
-    //            method: 'POST',
-    //       });
-    //
-    //        if (response.ok) {
-   //             alert('Images downloaded successfully!');
-   //         } else {
-//                alert('Failed to download images.');
-//            }
-//        } catch (error) {
-//            console.error('Error downloading images:', error);
-//            alert('Error downloading images.');
-//        }
-//    };
+    const handleDownloadImages = async () => {
+        try {
+            console.log('Starting batch download process');
+            const response = await fetch(`${API_URL}/api/download-all-images`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+    
+            const result = await response.json();
+            console.log('Download process result:', result);
+            
+            if (response.ok) {
+                alert(`Download complete!\nNew downloads: ${result.successful}\nSkipped existing: ${result.skipped}\nTotal processed: ${result.total}`);
+            } else {
+                console.log('Server reported error:', result);
+                alert(`Download status:\n${result.error}\n${result.details || ''}`);
+            }
+        } catch (error) {
+            console.log('Full error details:', error);
+            alert('Network connection error - check console for details');
+        }
+    };
     
     useEffect(() => {
         if (cards.length > 0) {
@@ -485,9 +494,11 @@ const App = () => {
                                     ) : (
                                         <Link to="/login" onClick={() => setIsMenuOpen(false)}>Login</Link>
                                     )}
-                                    {/* <button onClick={handleDownloadImages} style={{ marginTop: '20px' }}>
-                                        Download Images
-                                    </button> */}
+                                    {currentUser && currentUser.uid === ADMIN_USER_ID && (
+                                        <button onClick={handleDownloadImages} style={{ marginTop: '20px' }}>
+                                            Download Images
+                                        </button>
+                                    )}
                                 </nav>
                             </header>
                         </div>

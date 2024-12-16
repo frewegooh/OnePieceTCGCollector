@@ -34,21 +34,33 @@ app.get('/download-image', async (req, res) => {
             return res.status(200).send(publicUrl);
         }
 
+        // Log the URL we're trying to download
+        console.log('Downloading image from:', updatedUrl);
+
         // Download and upload to Cloud Storage
         const response = await axios({
             method: 'GET',
             url: updatedUrl,
-            responseType: 'arraybuffer'
+            responseType: 'arraybuffer',
+            validateStatus: false // Allow non-200 responses
         });
 
+        if (response.status !== 200) {
+            console.log('Image download failed with status:', response.status);
+            return res.status(404).send('Image not found');
+        }
+
         await file.save(response.data, {
-            contentType: 'image/jpeg'
+            contentType: 'image/jpeg',
+            metadata: {
+                cacheControl: 'public, max-age=31536000'
+            }
         });
 
         const publicUrl = `https://storage.googleapis.com/${bucketName}/${imageName}`;
         res.status(200).send(publicUrl);
     } catch (error) {
-        console.error("Error handling image:", error);
+        console.log("Error details:", error.message);
         res.status(500).send('Error processing the image.');
     }
 });
@@ -137,54 +149,81 @@ app.get('/download-image', async (req, res) => {
 // Endpoint to download all images for cards
 app.post('/api/download-all-images', async (req, res) => {
     try {
-        const folderPath = path.join(__dirname, 'csv-files'); // Folder containing CSV files
-        const files = fs.readdirSync(folderPath).filter(file => file.endsWith('.csv') && file !== 'OnePieceCardGameGroups.csv');
+        console.log('Starting image download process...');
+        
+        const folderPath = path.join(__dirname, 'csv-files');
+        const files = fs.readdirSync(folderPath).filter(file => 
+            file.endsWith('.csv') && file !== 'OnePieceCardGameGroups.csv'
+        );
+
+        console.log(`Found ${files.length} CSV files to process`);
+
+        // Create images directory if it doesn't exist
+        const imagesDir = path.join(__dirname, 'public', 'images');
+        await fs.ensureDir(imagesDir);
 
         let allCards = [];
-
         for (const file of files) {
             const filePath = path.join(folderPath, file);
             const csvText = fs.readFileSync(filePath, 'utf-8');
-
-            // Parse each CSV file and add `groupID` from filename (if available)
             const parsedData = Papa.parse(csvText, { header: true, skipEmptyLines: true }).data;
+            
+            // Log the first few URLs from each CSV file
+            console.log(`URLs from ${file}:`, parsedData.slice(0, 3).map(card => card.imageUrl));
+            
             allCards = allCards.concat(parsedData);
         }
 
-        // Download images for all cards
-        const promises = allCards.map(async (card) => {
+        console.log(`Processing ${allCards.length} cards`);
+
+        let successful = 0;
+        let skipped = 0;
+        const total = allCards.length;
+        const errors = [];
+
+        for (const card of allCards) {
+            if (!card.imageUrl) continue;
+
             const imageUrl = card.imageUrl.replace('_200w.jpg', '_400w.jpg');
             const imageName = path.basename(imageUrl);
-            const localPath = path.join(__dirname, 'images', imageName);
-
-            // Check if the image already exists locally
-            if (await fs.pathExists(localPath)) return;
+            const localPath = path.join(imagesDir, imageName);
 
             try {
+                // Check if image exists
+                if (await fs.pathExists(localPath)) {
+                    skipped++;
+                    continue;
+                }
+
+                console.log(`Downloading: ${imageUrl}`);
+                
                 const response = await axios({
                     method: 'GET',
                     url: imageUrl,
-                    responseType: 'stream',
+                    responseType: 'arraybuffer',
+                    timeout: 5000
                 });
 
-                const writer = fs.createWriteStream(localPath);
-                response.data.pipe(writer);
-
-                return new Promise((resolve, reject) => {
-                    writer.on('finish', resolve);
-                    writer.on('error', reject);
-                });
+                await fs.writeFile(localPath, response.data);
+                successful++;
+                console.log(`Successfully downloaded: ${imageName}`);
             } catch (error) {
-                console.error(`Error downloading image for ${card.cleanName}:`, error);
+                errors.push(`Failed to download ${imageUrl}: ${error.message}`);
             }
+        }
+
+        res.json({ 
+            successful, 
+            skipped,
+            total,
+            errors: errors.length > 0 ? errors : undefined
         });
-
-        await Promise.all(promises);
-
-        res.status(200).send('Images downloaded successfully.');
     } catch (error) {
-        console.error('Error downloading all images:', error);
-        res.status(500).json({ error: 'Error downloading all images.' });
+        console.error('Main process error:', error);
+        res.status(500).json({ 
+            error: 'Error downloading images',
+            details: error.message
+        });
     }
 });
 
