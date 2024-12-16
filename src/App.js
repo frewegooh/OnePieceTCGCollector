@@ -64,16 +64,18 @@ const App = () => {
 
     const handleDownloadImages = async () => {
         try {
-            console.log('Starting batch download process');
+            console.log('API URL:', API_URL);
+            console.log('Starting download request');
             const response = await fetch(`${API_URL}/api/download-all-images`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 }
             });
-    
+
+            console.log('Response status:', response.status);
             const result = await response.json();
-            console.log('Download process result:', result);
+            console.log('Response data:', result);
             
             if (response.ok) {
                 alert(`Download complete!\nNew downloads: ${result.successful}\nSkipped existing: ${result.skipped}\nTotal processed: ${result.total}`);
