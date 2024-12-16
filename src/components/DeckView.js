@@ -7,6 +7,7 @@ import { Menu, MenuItem } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ShareModal from './ShareModal';
 import API_URL from '../config';
+import { auth } from '../firebase';
 
 const DeckView = () => {
     const { deckId } = useParams();
@@ -15,6 +16,7 @@ const DeckView = () => {
     const [cardData, setCardData] = useState([]);
     const [anchorEl, setAnchorEl] = useState(null);
     const [showShareModal, setShowShareModal] = useState(false);
+    const [isOwner, setIsOwner] = useState(false);
 
     // Fetch card data from server
     useEffect(() => {
@@ -28,6 +30,8 @@ const DeckView = () => {
             const deckDoc = await getDoc(doc(firestore, 'decks', deckId));
             if (deckDoc.exists() && cardData.length > 0) {
                 const deckData = deckDoc.data();
+                // Check if current user is the deck owner
+                setIsOwner(auth.currentUser?.uid === deckData.userId);
                 // Find leader card
                 const leaderCard = cardData.find(card => card.productId === deckData.leaderId);
                 
@@ -83,16 +87,20 @@ const DeckView = () => {
         <div className="deck-view">
             <div className="deck-header">
                 <h1>{deck.name}</h1>
-                <MoreVertIcon onClick={handleMenuClick} className="menu-icon" />
-                <Menu
-                    anchorEl={anchorEl}
-                    open={Boolean(anchorEl)}
-                    onClose={handleMenuClose}
-                >
-                    <MenuItem onClick={handleEdit}>Edit Deck</MenuItem>
-                    <MenuItem onClick={handleDelete}>Delete Deck</MenuItem>
-                    <MenuItem onClick={handleShare}>Share Deck</MenuItem>
-                </Menu>
+                {isOwner && (
+                    <>
+                        <MoreVertIcon onClick={handleMenuClick} className="menu-icon" />
+                        <Menu
+                            anchorEl={anchorEl}
+                            open={Boolean(anchorEl)}
+                            onClose={handleMenuClose}
+                        >
+                            <MenuItem onClick={handleEdit}>Edit Deck</MenuItem>
+                            <MenuItem onClick={handleDelete}>Delete Deck</MenuItem>
+                            <MenuItem onClick={handleShare}>Share Deck</MenuItem>
+                        </Menu>
+                    </>
+                )}
             </div>
 
             <div className="deck-leader">
