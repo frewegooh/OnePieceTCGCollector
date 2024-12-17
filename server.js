@@ -23,42 +23,32 @@ app.get('/download-image', async (req, res) => {
 
     const updatedUrl = imageUrl.replace('_200w.jpg', '_400w.jpg');
     const imageName = path.basename(updatedUrl);
+    const localPath = path.join(__dirname, 'public', 'images', imageName);
+
+    // Local development: just serve existing images
+    if (process.env.NODE_ENV !== 'production') {
+        try {
+            if (await fs.pathExists(localPath)) {
+                return res.sendFile(localPath);
+            }
+            return res.status(404).send('Image not found locally');
+        } catch (error) {
+            console.log("Local file error:", error.message);
+            return res.status(500).send('Error accessing local image.');
+        }
+    }
+
+    // Production: check Google Cloud Storage
     const bucket = storage.bucket(bucketName);
     const file = bucket.file(imageName);
 
     try {
-        // Check if image exists in bucket
         const [exists] = await file.exists();
         if (exists) {
             const publicUrl = `https://storage.googleapis.com/${bucketName}/${imageName}`;
             return res.status(200).send(publicUrl);
         }
-
-        // Log the URL we're trying to download
-        console.log('Downloading image from:', updatedUrl);
-
-        // Download and upload to Cloud Storage
-        const response = await axios({
-            method: 'GET',
-            url: updatedUrl,
-            responseType: 'arraybuffer',
-            validateStatus: false // Allow non-200 responses
-        });
-
-        if (response.status !== 200) {
-            console.log('Image download failed with status:', response.status);
-            return res.status(404).send('Image not found');
-        }
-
-        await file.save(response.data, {
-            contentType: 'image/jpeg',
-            metadata: {
-                cacheControl: 'public, max-age=31536000'
-            }
-        });
-
-        const publicUrl = `https://storage.googleapis.com/${bucketName}/${imageName}`;
-        res.status(200).send(publicUrl);
+        return res.status(404).send('Image not found');
     } catch (error) {
         console.log("Error details:", error.message);
         res.status(500).send('Error processing the image.');
