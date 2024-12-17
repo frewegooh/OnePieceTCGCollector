@@ -15,6 +15,7 @@ const CardList = ({
 }) => {
     const { currentUser } = useAuth();
     const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
     //const getLocalImageUrl = (url) => {
     //    const imageName = url.split('/').pop().replace('_200w.jpg', '_400w.jpg');
@@ -22,8 +23,16 @@ const CardList = ({
     //};
 
     useEffect(() => {
-        //console.log('CardList mounted/updated with cards:', cards?.length);
+        if (cards === undefined) {
+            setIsLoading(true);
+        } else {
+            setIsLoading(false);
+        }
     }, [cards]);
+
+    if (isLoading) {
+        return <div>Loading Cards...</div>;
+    }
 
     if (!cards?.length) {
         return <div>No Cards Found</div>;

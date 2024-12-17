@@ -125,13 +125,32 @@ const FilterSidebar = ({
         onFilteredCardsChange,
     ]);
     
+    const handleClearFilters = () => {
+        onColorChange([]);
+        onTypeChange([]);
+        onCostChange([]);
+        onPowerChange([]);
+        onAttributeChange([]);
+        onCounterChange([]);
+        onGroupChange('');
+        onSearchChange('');
+        if (multicolorOnly) {
+            onMulticolorChange();
+        }
+        if (showOwnedOnly) {
+            onOwnedOnlyChange();
+        }
+    };
+    
+
+
     return (
         <div className="sideFilter">
             {/* Search Field */}
             <div className="searchCards">
                 <input
                     type="text"
-                    placeholder="Search cards..."
+                    placeholder="Search all..."
                     value={searchQuery}
                     onChange={(e) => onSearchChange(e.target.value)}
                 />
@@ -244,6 +263,17 @@ const FilterSidebar = ({
                         />
                         Owned Cards
                     </label>
+                </div>
+
+                <div className="sideFilter">
+                    <button 
+                        onClick={handleClearFilters}
+                        className="clear-filters-button"
+                    >
+                        Clear All Filters
+                    </button>
+                    
+                    {/* Rest of your existing filter components */}
                 </div>
         </div>
     );

@@ -155,13 +155,19 @@ nav a:hover {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
 }
 .sideFilterPar, .sideFilter > div {
   margin-left:10px;
   margin-right:10px;
 }
+
+.sideFilterPar, .sideFilter ul.dropdown-options li > label {
+  width: 100%;
+  display: inline-block;
+}
+
 .sideFilterPar  h3 {
   color:#ff2a6d;
   margin-bottom:10px;
@@ -215,15 +221,17 @@ nav a:hover {
 /* Card Info Popup */
 .cardInfoPop {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
+  max-width:450px;
+  padding:0px !important;
 }
 .cardInfoPop .imgHolder, .cardInfoPop .imgHolder img {
-  width:100%;
+  width:400px;
   margin-right:20px;
-  max-width:200px;
+  max-width:100%;
 }
 .cardInfoPop p {
-  margin: 10px 0px;
+  margin: 5px 0px;
 }
 
 .cardListCard h3 {
@@ -352,8 +360,15 @@ input[type=text]:focus {
 .cardDetailPopup {
   position: relative;
   padding: 1rem;
+  padding-top:0px;
   background: white;
   border-radius: 8px;
+}
+
+.cardDetailTitle {
+  text-align:center;
+  font-weight: bold;
+  font-size: 22px;
 }
 
 .cardInfo img {
@@ -664,4 +679,13 @@ input[type=text]:focus {
 }
 .deck-view .deck-leader .card-container img {
   max-width:100%;
+}
+
+.tcgPlayerBttn {
+  width:100%;
+  text-align: center;
+  margin-top:0px;
+}
+.tcgPlayerBttn a {
+  margin-top:0px !important;
 }

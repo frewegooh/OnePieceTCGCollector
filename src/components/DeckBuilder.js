@@ -394,9 +394,9 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
                     </button>
 
                     <LoginPrompt 
-                open={showLoginPrompt} 
-                onClose={() => setShowLoginPrompt(false)} 
-            />
+                        open={showLoginPrompt} 
+                        onClose={() => setShowLoginPrompt(false)} 
+                    />
 
                     <h2>Your Deck ({deck ? deck.reduce((sum, card) => sum + card.quantity, 0) : 0}/50)</h2>
                     {!leader ? (
