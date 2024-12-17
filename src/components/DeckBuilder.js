@@ -11,12 +11,9 @@ import LoginPrompt from './LoginPrompt';
 
 
 const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl }) => {
-    // Add leaderCards variable
     const { currentUser } = useAuth();
+    // Move ALL useState declarations here, before any conditional checks
     const [showLoginPrompt, setShowLoginPrompt] = useState(false);
-    const leaderCards = cards.filter((card) => card.extCardType === 'Leader');
-
-    // State declarations
     const [filteredCards, setFilteredCards] = useState([]);
     const [showLeaderPicker, setShowLeaderPicker] = useState(false);
     const [selectedCard, setSelectedCard] = useState(null);
@@ -36,53 +33,57 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
     const [availablePowerValues, setAvailablePowerValues] = useState([]);
     const [availableAttributes, setAvailableAttributes] = useState([]);
     const [leader, setLeader] = useState(null);
-    const [deck, setDeck] = useState([]);
+    const [deck, setDeck] = useState(initialDeck?.cards || []);
     const [selectedColors, setSelectedColors] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [showOwnedOnly, setShowOwnedOnly] = useState(false);
     const [deckName, setDeckName] = useState('');
-    //const [deckUrl, setDeckUrl] = useState('');
+
+    const leaderCards = cards?.filter((card) => card.extCardType === 'Leader') || [];
 
     // Infinite Scroll
     useEffect(() => {
         const cardListContainer = document.querySelector('.cardListCSS');
-        
-        const handleScroll = () => {
-            const { scrollTop, scrollHeight, clientHeight } = cardListContainer;
-            if (scrollTop + clientHeight >= scrollHeight - 50) {
-                setDisplayedCards(prevDisplayedCards => prevDisplayedCards + 25);
-            }
-        };
-    
         if (cardListContainer) {
+            const handleScroll = () => {
+                const { scrollTop, scrollHeight, clientHeight } = cardListContainer;
+                if (scrollTop + clientHeight >= scrollHeight - 50) {
+                    setDisplayedCards(prevDisplayedCards => prevDisplayedCards + 25);
+                }
+            };
             cardListContainer.addEventListener('scroll', handleScroll);
+            return () => cardListContainer.removeEventListener('scroll', handleScroll);
         }
     }, []);
 
     // Update the useEffect that handles leader changes
     useEffect(() => {
-        if (leader) {
+        if (leader && Array.isArray(cards)) {
             const leaderColors = leader.extColor ? leader.extColor.split(';') : [];
             const filtered = cards.filter((card) => {
-                // Only include Character, Stage, Event cards
+                if (!card) return false;
                 const validType = ['Character', 'Stage', 'Event'].includes(card.extCardType);
-                
-                // Get the card's colors
                 const cardColors = card.extColor ? card.extColor.split(';') : [];
-                
-                // Card matches if it shares at least one color with the leader
                 const matchesColor = cardColors.some(color => leaderColors.includes(color));
-                
                 return validType && matchesColor;
             });
             setFilteredCards(filtered);
-        } else {
+        } else if (Array.isArray(cards)) {
             setFilteredCards(cards);
         }
     }, [leader, cards]);
 
     // Modify handleSaveDeck to check auth
     const handleSaveDeck = async () => {
+        console.log('Current user:', currentUser);
+        console.log('Deck data:', {
+            name: deckName,
+            leaderId: leader.productId,
+            cardIds: deck.map(card => ({
+                productId: card.productId,
+                quantity: card.quantity
+            }))
+        });
         if (!currentUser) {
             setShowLoginPrompt(true);
             return;
@@ -110,8 +111,8 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
             alert(`Deck "${deckName}" saved! Share using: ${shareableUrl}`);
             setDeckName('');
         } catch (error) {
-            alert('Error saving deck');
-            console.error(error);
+            alert(`Error saving deck: ${error.message}`);
+            console.error('Detailed error:', error);
         }
     };
 
@@ -134,8 +135,9 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
         setShowLeaderPicker(false);
     };
 
+
     useEffect(() => {
-        if (cards.length > 0) {
+        if (cards && cards.length > 0) {
             // Extract unique color values
             const uniqueColors = [...new Set(cards.flatMap((card) => card.extColor?.split(';') || []))];
             setAvailableColors(uniqueColors);
@@ -154,7 +156,7 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
             // Extract unique counter values
             const uniqueCounters = [...new Set(cards.map(card => card.extCounterplus).filter(counter => counter !== undefined))];
             setAvailableCounterValues(uniqueCounters.sort((a, b) => a - b));
-            }
+        }
     }, [cards]);
 
     useEffect(() => {
@@ -177,7 +179,14 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
 
 
     useEffect(() => {
+
+        if (!Array.isArray(cards)) {
+            setFilteredCards([]);
+            return;
+        }
         const filtered = cards.filter((card) => {
+            if (!card) return false;
+
             const cardColors = card.extColor ? card.extColor.split(';') : [];
             const matchesColor = (() => {
                 if (multicolorOnly) {
@@ -225,7 +234,7 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
 
             const matchesOwned = !showOwnedOnly || card.quantity > 0;        
 
-            const isMatch =
+            return (
                 matchesColor &&
                 matchesSearchQuery &&
                 matchesType &&
@@ -233,9 +242,9 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
                 matchesPower &&
                 matchesGroup &&
                 matchesAttribute &&
-                matchesCounter&&
-                matchesOwned;
-            return isMatch;
+                matchesCounter &&
+                matchesOwned
+            );
         });
 
         setFilteredCards(filtered);
@@ -252,6 +261,11 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
         selectedCounterValues,
         showOwnedOnly,
     ]);
+
+
+    if (!cards) {
+        return <div>Loading cards...</div>;
+    }
 
 
     const handleAddToDeck = (card) => {
@@ -306,7 +320,9 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
     };
 
 
-
+    if (!Array.isArray(cards)) {
+        return <div>Loading cards...</div>;
+    }
 
 
     // Return JSX
@@ -372,7 +388,7 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
                     />
                     <button 
                         onClick={handleSaveDeck} 
-                        disabled={!leader || deck.length === 0 || !deckName.trim()}
+                        disabled={!leader || !deck?.length || !deckName.trim()}
                     >
                         {currentUser ? 'Save Deck' : 'Login to Save Deck'}
                     </button>
@@ -382,7 +398,7 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
                 onClose={() => setShowLoginPrompt(false)} 
             />
 
-                    <h2>Your Deck ({deck.reduce((sum, card) => sum + card.quantity, 0)}/50)</h2>
+                    <h2>Your Deck ({deck ? deck.reduce((sum, card) => sum + card.quantity, 0) : 0}/50)</h2>
                     {!leader ? (
                         <button onClick={() => setShowLeaderPicker(true)}>Pick Leader</button>
                     ) : (

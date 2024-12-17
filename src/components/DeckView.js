@@ -64,10 +64,20 @@ const DeckView = ({ getImageUrl }) => {
     };
 
     const handleEdit = () => {
-        navigate(`/deck/edit/${deckId}`);
+        if (deck && cardData.length > 0) {
+            navigate(`/deck/edit/${deckId}`, { 
+                state: { 
+                    deck: {
+                        name: deck.name,
+                        leader: deck.leader,
+                        cards: deck.cards || []
+                    }
+                }
+            });
+        }
         handleMenuClose();
     };
-
+    
     const handleDelete = async () => {
         if (window.confirm('Are you sure you want to delete this deck?')) {
             await deleteDoc(doc(firestore, 'decks', deckId));

@@ -586,11 +586,16 @@ const App = () => {
                                 <Route 
                                     path="/deck/edit/:deckId" 
                                     element={
-                                        <DeckEditor 
-                                            cards={cards} 
-                                            user={user}
-                                            mergeDeckWithCurrentCardData={mergeDeckWithCurrentCardData}
-                                        />
+                                        cards && Array.isArray(cards) && cards.length > 0 ? (
+                                            <DeckEditor 
+                                                cards={cards} 
+                                                user={user}
+                                                mergeDeckWithCurrentCardData={mergeDeckWithCurrentCardData}
+                                                getImageUrl={getImageUrl}
+                                            />
+                                        ) : (
+                                            <div>Loading...</div>
+                                        )
                                     } 
                                 />
                                 <Route path="/login" element={<Login />} />

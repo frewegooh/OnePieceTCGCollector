@@ -1,51 +1,88 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { firestore } from '../firebase';
 import DeckBuilder from './DeckBuilder';
 
-
-const DeckEditor = ({ cards, user }) => {
-    // Get the deck ID from URL parameters
+const DeckEditor = ({ cards, user, getImageUrl }) => {
     const { deckId } = useParams();
-    const [initialDeck, setInitialDeck] = useState(null);
+    const navigate = useNavigate();
+    const [deck, setDeck] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-
-    // Fetch the existing deck data when component mounts
     useEffect(() => {
         const fetchDeck = async () => {
-            const deckDoc = await getDoc(doc(firestore, 'decks', deckId));
-            if (deckDoc.exists()) {
-                setInitialDeck({ id: deckDoc.id, ...deckDoc.data() });
+            if (!cards || !Array.isArray(cards)) {
+                return;
+            }
+
+            try {
+                const deckDoc = await getDoc(doc(firestore, 'decks', deckId));
+                
+                if (deckDoc.exists()) {
+                    const deckData = deckDoc.data();
+                    const leaderCard = cards.find(card => card.productId === deckData.leaderId);
+                    
+                    const cardsWithData = deckData.cardIds.map(cardId => {
+                        const card = cards.find(c => c.productId === cardId.productId);
+                        return {
+                            ...card,
+                            quantity: cardId.quantity
+                        };
+                    });
+
+                    setDeck({
+                        id: deckDoc.id,
+                        name: deckData.name,
+                        leader: leaderCard,
+                        cards: cardsWithData,
+                        timestamp: deckData.timestamp,
+                        userId: deckData.userId
+                    });
+                }
+                setLoading(false);
+            } catch (error) {
+                console.error('Error fetching deck:', error);
+                setLoading(false);
             }
         };
-        fetchDeck();
-    }, [deckId]);
 
-    // Handle saving updates to the existing deck
+        fetchDeck();
+    }, [deckId, cards]);
+
     const handleUpdateDeck = async (deckData) => {
         try {
             await updateDoc(doc(firestore, 'decks', deckId), {
-                ...deckData,
+                name: deckData.name,
+                leaderId: deckData.leader.productId,
+                cardIds: deckData.cards.map(card => ({
+                    productId: card.productId,
+                    quantity: card.quantity
+                })),
                 timestamp: new Date().toISOString()
             });
-            alert('Deck updated successfully!');
+            navigate(`/deck/${deckId}`);
         } catch (error) {
-            alert('Error updating deck');
-            console.error(error);
+            console.error('Error updating deck:', error);
         }
     };
 
-    if (!initialDeck) return <div>Loading deck...</div>;
+    if (loading || !cards || !Array.isArray(cards)) {
+        return <div>Loading...</div>;
+    }
 
-    // Pass the deck data and editing mode to DeckBuilder
+    if (!deck) {
+        return <div>Deck not found</div>;
+    }
+
     return (
         <DeckBuilder 
             cards={cards}
             user={user}
-            initialDeck={initialDeck}
+            initialDeck={deck}
             onSave={handleUpdateDeck}
             isEditing={true}
+            getImageUrl={getImageUrl}
         />
     );
 };
