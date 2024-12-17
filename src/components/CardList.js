@@ -16,10 +16,10 @@ const CardList = ({
     const { currentUser } = useAuth();
     const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
-    const getLocalImageUrl = (url) => {
-        const imageName = url.split('/').pop().replace('_200w.jpg', '_400w.jpg');
-        return `${process.env.PUBLIC_URL}/images/${imageName}`;
-    };
+    //const getLocalImageUrl = (url) => {
+    //    const imageName = url.split('/').pop().replace('_200w.jpg', '_400w.jpg');
+    //    return `${process.env.PUBLIC_URL}/images/${imageName}`;
+    //};
 
     useEffect(() => {
         //console.log('CardList mounted/updated with cards:', cards?.length);

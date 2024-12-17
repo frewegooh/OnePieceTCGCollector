@@ -568,12 +568,19 @@ input[type=text]:focus {
 
 
 /* Deck Library */
+.deck-library .decks-grid {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
 .deck-library .decks-grid .deck-preview {
   max-width:250px;
   position: relative;
   border: 5px solid black;
-    border-radius: 20px;
-    overflow: hidden;
+  border-radius: 20px;
+  overflow: hidden;
+  margin:10px;
 }
 .deck-library .decks-grid .deck-preview h2 {
   position: absolute;
@@ -586,6 +593,7 @@ input[type=text]:focus {
   margin-bottom: 0px;
   padding-top: 10px;
   padding-bottom: 10px;
+  font-size:18px;
 }
 
 .hamburger {
@@ -637,4 +645,23 @@ input[type=text]:focus {
   header nav {
     text-align:left;
   }
+}
+
+
+/* Deck View */
+.deck-view .deck-leader {
+  /*max-width:200px;*/
+}
+.deck-view .deck-leader h2 {
+  margin-bottom: 0px;
+  margin-top: 0px;
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  padding-left: 10px;
+  padding-right: 10px;
+  border-radius: 25px 25px 0px 0px;
+}
+.deck-view .deck-leader .card-container img {
+  max-width:100%;
 }

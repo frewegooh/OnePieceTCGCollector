@@ -86,7 +86,7 @@ const DeckView = ({ getImageUrl }) => {
     return (
         <div className="deck-view">
             <div className="deck-header">
-                <h1>{deck.name}</h1>
+                <h1>Deck Name: {deck.name}</h1>
                 {isOwner && (
                     <>
                         <MoreVertIcon onClick={handleMenuClick} className="menu-icon" />
@@ -103,20 +103,18 @@ const DeckView = ({ getImageUrl }) => {
                 )}
             </div>
 
-            <div className="deck-leader">
-                <h2>Leader</h2>
-                <div className="card-container">
-                    <img 
-                        src={getImageUrl(deck.leader.imageUrl)} 
-                        alt={deck.leader.name}
-                        className="card-image"
-                    />
-                </div>
-            </div>
-
             <div className="deck-cards">
-                <h2>Cards</h2>
                 <div className="cards-grid">
+                    <div className="deck-leader">
+                        <div className="card-container">
+                            <h2>Leader</h2>
+                            <img 
+                                src={getImageUrl(deck.leader.imageUrl)} 
+                                alt={deck.leader.name}
+                                className="card-image"
+                            />
+                        </div>
+                    </div>
                     {deck.cards.map((card, index) => (
                         <div key={index} className="card-container">
                             <div className="card-quantity">{card.quantity}</div>
@@ -144,15 +142,15 @@ const DeckView = ({ getImageUrl }) => {
                     margin: 10px;
                 }
                 .card-quantity {
-                    position: absolute;
-                    top: 5px;
-                    right: 5px;
                     background-color: rgba(0, 0, 0, 0.7);
                     color: white;
                     padding: 2px 6px;
-                    border-radius: 50%;
+                    border-radius: 500px 500px 0px 0px;
                     font-weight: bold;
                     z-index: 1;
+                    width: fit-content;
+                    margin-left:auto;
+                    margin-right:0;
                 }
                 .card-image {
                     max-width: 200px;

@@ -2,6 +2,7 @@
 import React from 'react';
 //import { formatCardText } from '../utils/textUtils';
 import DOMPurify from 'dompurify';
+import { getImageUrl } from '../config';
 
 export const formatCardTextWithHTML = (text) => {
     const formattedText = text.replace(/\[(.*?)\]/g, (_, match) => {
@@ -10,12 +11,6 @@ export const formatCardTextWithHTML = (text) => {
     });
 
     return DOMPurify.sanitize(formattedText);
-};
-
-
-const getLocalImageUrl = (url) => {
-    const imageName = url.split('/').pop().replace('_200w.jpg', '_400w.jpg');
-    return `${process.env.PUBLIC_URL}/images/${imageName}`;
 };
 
 
@@ -40,7 +35,7 @@ const CardDetail = ({ card, onPrevious, onNext }) => {
 
         <div style={{ padding: '1rem' }} className='cardInfoPop'>
             <div className='imgHolder'>
-            <img src={getLocalImageUrl(card.imageUrl)} alt={card.cleanName} />
+            <img src={getImageUrl(card.imageUrl)} alt={card.cleanName} />
 
                 {card.marketPrice !== undefined && (
                         <p><strong>Market Price:</strong> ${card.marketPrice}</p>
