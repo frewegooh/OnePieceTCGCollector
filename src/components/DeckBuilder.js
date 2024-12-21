@@ -38,13 +38,14 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
     const [searchQuery, setSearchQuery] = useState('');
     const [showOwnedOnly, setShowOwnedOnly] = useState(false);
     const [deckName, setDeckName] = useState('');
+    const [showDeckBuilder, setShowDeckBuilder] = useState(false);
 
     const leaderCards = cards?.filter((card) => card.extCardType === 'Leader') || [];
 
     // Infinite Scroll
     useEffect(() => {
-        const cardListContainer = document.querySelector('.cardListCSS');
-        if (cardListContainer) {
+        const cardListContainer = document.querySelector('.rightCardPanel.cardListCSS');
+        if (cardListContainer && showDeckBuilder) {
             const handleScroll = () => {
                 const { scrollTop, scrollHeight, clientHeight } = cardListContainer;
                 if (scrollTop + clientHeight >= scrollHeight - 50) {
@@ -54,7 +55,7 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
             cardListContainer.addEventListener('scroll', handleScroll);
             return () => cardListContainer.removeEventListener('scroll', handleScroll);
         }
-    }, []);
+    }, [showDeckBuilder]);
 
     // Update the useEffect that handles leader changes
     useEffect(() => {
@@ -133,6 +134,7 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
     const handlePickLeader = (card) => {
         setLeader(card);
         setShowLeaderPicker(false);
+        setShowDeckBuilder(false);
     };
 
 
@@ -328,40 +330,110 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
     // Return JSX
     return (
         <div className="deck-builder">
-            <div className="sideFilterPar">
-                <FilterSidebar
-                    cards={cards}
-                    onFilteredCardsChange={setFilteredCards}
-                    selectedColors={selectedColors}
-                    onColorChange={setSelectedColors}
-                    availableColors={availableColors}
-                    multicolorOnly={multicolorOnly}
-                    onMulticolorChange={() => setMulticolorOnly(!multicolorOnly)}
-                    searchQuery={searchQuery}
-                    onSearchChange={setSearchQuery}
-                    selectedTypes={selectedTypes}
-                    onTypeChange={setSelectedTypes}
-                    availableTypes={['Character', 'Event', 'Stage', 'Leader']}
-                    selectedCostValues={selectedCostValues}
-                    onCostChange={setSelectedCostValues}
-                    availableCostValues={availableCostValues}
-                    selectedPowerValues={selectedPowerValues}
-                    onPowerChange={setSelectedPowerValues}
-                    availablePowerValues={availablePowerValues}
-                    selectedCounterValues={selectedCounterValues}
-                    onCounterChange={setSelectedCounterValues}
-                    availableCounterValues={availableCounterValues}
-                    selectedAttributes={selectedAttributes}
-                    onAttributeChange={setSelectedAttributes}
-                    availableAttributes={availableAttributes}
-                    selectedGroupID={selectedGroupID}
-                    onGroupChange={setSelectedGroupID}
-                    groupMap={groupMap}
-                    showOwnedOnly={showOwnedOnly}
-                    onOwnedOnlyChange={() => setShowOwnedOnly(!showOwnedOnly)}
+    <div className="cardBuilderPar">
+        <div className="deckSection">
+            <div className='deckBuilderHead'>
+                <h2>Your Deck ({deck ? deck.reduce((sum, card) => sum + card.quantity, 0) : 0}/50)</h2>
+                <input
+                    type="text"
+                    value={deckName}
+                    onChange={(e) => setDeckName(e.target.value)}
+                    placeholder="Enter deck name"
+                    className="deck-name-input"
+                />
+                <button 
+                    onClick={handleSaveDeck} 
+                    disabled={!leader || !deck?.length || !deckName.trim()}
+                >
+                    {currentUser ? 'Save Deck' : 'Login to Save Deck'}
+                </button>
+                <LoginPrompt 
+                    open={showLoginPrompt} 
+                    onClose={() => setShowLoginPrompt(false)} 
                 />
             </div>
-            <div className="cardBuilderPar">
+            <div className="deck-cards-container">
+                {!leader ? (
+                    <button onClick={() => {
+                        setShowLeaderPicker(true);
+                        setShowDeckBuilder(true);
+                    }}>Pick Leader</button>
+                ) : (
+                    <>
+                        <div className="leaderSection">
+                            <h3>Leader</h3>
+                            <CardList 
+                                cards={[leader]} 
+                                showQuantity={false}
+                                onSecondaryButtonClick={() => {
+                                    setLeader(null);
+                                    setShowLeaderPicker(false);
+                                }}
+                                secondaryButtonLabel="-"
+                            />
+                        </div>
+                        <div className="deckCards">
+                            {deck.length > 0 && deck.sort((a, b) => {
+                                if (a.extCardType === 'Leader') return -1;
+                                if (b.extCardType === 'Leader') return 1;
+                                return 0;
+                            }).map(card => (
+                                <div key={card.productId} className="card-container">
+                                    <div className="card-quantity">{card.quantity}</div>
+                                    <img src={getImageUrl(card.imageUrl)} alt={card.name} />
+                                    <div className="card-controls">
+                                        <button onClick={() => handleRemoveFromDeck(card)}>-</button>
+                                        <button onClick={() => handleAddToDeck(card)}>+</button>
+                                        <button onClick={() => handleViewDetails(card)}>Details</button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        {!showDeckBuilder && (
+                            <button onClick={() => setShowDeckBuilder(true)}>Add Cards</button>
+                        )}
+                    </>
+                )}
+            </div>
+        </div>
+        
+        {showDeckBuilder && (
+            <div className='deckBuilderContainer' style={{position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'white', zIndex: 10}}>
+
+                <div className="sideFilterPar">
+                    <FilterSidebar
+                        cards={cards}
+                        onFilteredCardsChange={setFilteredCards}
+                        selectedColors={selectedColors}
+                        onColorChange={setSelectedColors}
+                        availableColors={availableColors}
+                        multicolorOnly={multicolorOnly}
+                        onMulticolorChange={() => setMulticolorOnly(!multicolorOnly)}
+                        searchQuery={searchQuery}
+                        onSearchChange={setSearchQuery}
+                        selectedTypes={selectedTypes}
+                        onTypeChange={setSelectedTypes}
+                        availableTypes={['Character', 'Event', 'Stage', 'Leader']}
+                        selectedCostValues={selectedCostValues}
+                        onCostChange={setSelectedCostValues}
+                        availableCostValues={availableCostValues}
+                        selectedPowerValues={selectedPowerValues}
+                        onPowerChange={setSelectedPowerValues}
+                        availablePowerValues={availablePowerValues}
+                        selectedCounterValues={selectedCounterValues}
+                        onCounterChange={setSelectedCounterValues}
+                        availableCounterValues={availableCounterValues}
+                        selectedAttributes={selectedAttributes}
+                        onAttributeChange={setSelectedAttributes}
+                        availableAttributes={availableAttributes}
+                        selectedGroupID={selectedGroupID}
+                        onGroupChange={setSelectedGroupID}
+                        groupMap={groupMap}
+                        showOwnedOnly={showOwnedOnly}
+                        onOwnedOnlyChange={() => setShowOwnedOnly(!showOwnedOnly)}
+                    />
+                </div>
+
                 <div className="rightCardPanel cardListCSS">
                     <CardList
                         cards={showLeaderPicker 
@@ -369,77 +441,32 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
                             : filteredCards.slice(0, displayedCards)}
                         onSecondaryButtonClick={showLeaderPicker ? handlePickLeader : handleAddToDeck}
                         onPrimaryButtonClick={handleViewDetails}
+                        onCardClick={handleViewDetails}
                         primaryButtonLabel="Details"
                         secondaryButtonLabel="+"
                         showQuantity={true}
+                        deckQuantities={deck.reduce((acc, card) => {
+                            acc[card.productId] = card.quantity;
+                            return acc;
+                        }, {})}
                         disableQuantityEdit={true}
                         enableCardClick={true}
                     />
                 </div>
-
-                <div className="deckSection">
-
-                    <input
-                        type="text"
-                        value={deckName}
-                        onChange={(e) => setDeckName(e.target.value)}
-                        placeholder="Enter deck name"
-                        className="deck-name-input"
-                    />
+                <div className='viewBttnHldr'>
                     <button 
-                        onClick={handleSaveDeck} 
-                        disabled={!leader || !deck?.length || !deckName.trim()}
+                        onClick={() => setShowDeckBuilder(false)}
+                        className='deckBuilderViewDeckbttn'
                     >
-                        {currentUser ? 'Save Deck' : 'Login to Save Deck'}
+                        Close
                     </button>
-
-                    <LoginPrompt 
-                        open={showLoginPrompt} 
-                        onClose={() => setShowLoginPrompt(false)} 
-                    />
-
-                    <h2>Your Deck ({deck ? deck.reduce((sum, card) => sum + card.quantity, 0) : 0}/50)</h2>
-                    {!leader ? (
-                        <button onClick={() => setShowLeaderPicker(true)}>Pick Leader</button>
-                    ) : (
-                        <>
-                            <div className="leaderSection">
-                                <h3>Leader</h3>
-                                <CardList 
-                                    cards={[leader]} 
-                                    showQuantity={false}
-                                    onSecondaryButtonClick={() => {
-                                        setLeader(null);
-                                        setShowLeaderPicker(false);
-                                    }}
-                                    secondaryButtonLabel="-"
-                                />
-                            </div>
-                        </>
-                    )}
-                    {deck.length > 0 && (
-                        <div className="deckCards">
-                        {deck.sort((a, b) => {
-                            if (a.extCardType === 'Leader') return -1;
-                            if (b.extCardType === 'Leader') return 1;
-                            return 0;
-                        }).map(card => (
-                            <div key={card.productId} className="card-container">
-                                <div className="card-quantity">{card.quantity}</div>
-                                <img src={getImageUrl(card.imageUrl)} alt={card.name} />
-                                <div className="card-controls">
-                                    <button onClick={() => handleRemoveFromDeck(card)}>-</button>
-                                    <button onClick={() => handleAddToDeck(card)}>+</button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                    )}
                 </div>
             </div>
-            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-                {selectedCard && <CardDetail card={selectedCard} />}
-            </Modal>
+        )}
+    </div>
+        <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+            {selectedCard && <CardDetail card={selectedCard} />}
+        </Modal>
         </div>
     );
 };

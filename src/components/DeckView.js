@@ -8,6 +8,8 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ShareModal from './ShareModal';
 import API_URL from '../config';
 import { auth } from '../firebase';
+import Modal from './Modal';
+import CardDetail from './CardDetail';
 
 const DeckView = ({ getImageUrl }) => {
     const { deckId } = useParams();
@@ -17,6 +19,13 @@ const DeckView = ({ getImageUrl }) => {
     const [anchorEl, setAnchorEl] = useState(null);
     const [showShareModal, setShowShareModal] = useState(false);
     const [isOwner, setIsOwner] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedCard, setSelectedCard] = useState(null);
+
+    const handleViewDetails = (card) => {
+        setSelectedCard(card);
+        setIsModalOpen(true);
+    };
 
     // Fetch card data from server
     useEffect(() => {
@@ -133,7 +142,14 @@ const DeckView = ({ getImageUrl }) => {
                                 alt={card.name}
                                 className="card-image"
                             />
+                            <button 
+                                className="viewBttn" 
+                                onClick={() => handleViewDetails(card)}
+                            >
+                                View Details
+                            </button>
                         </div>
+                        
                     ))}
                 </div>
             </div>
@@ -172,7 +188,19 @@ const DeckView = ({ getImageUrl }) => {
                     gap: 20px;
                 }
             `}</style>
-        </div>
+
+            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+                {selectedCard && (
+                    <CardDetail 
+                        card={selectedCard}
+                    />
+                )}
+            </Modal>
+
+
+        </div>    
+
+
     );
 };
 

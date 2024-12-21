@@ -492,7 +492,7 @@ input[type=text]:focus {
   margin:15px;
 }
 
-.deckCards .card-container .card-quantity {
+.deckCards .card-container .card-quantity,  .deck-quantity{
   position: absolute;
   top: 10px;
   right: 10px;
@@ -579,6 +579,10 @@ input[type=text]:focus {
 
 .auth-link:hover {
   text-decoration: underline;
+}
+
+.deckBuilderContainer {
+  z-index: 1111;
 }
 
 
@@ -688,4 +692,84 @@ input[type=text]:focus {
 }
 .tcgPlayerBttn a {
   margin-top:0px !important;
+}
+
+/* Deck Builder */
+.deckBuilderHead {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.deckBuilderHead h2 {
+  margin-top:0px;
+  margin-bottom:0px;
+  flex-grow:1;
+}
+.deckSection {
+  z-index:1;
+  position: relative;
+}
+
+.deckSection .leaderSection, .deckSection .deckCards .card-container {
+  max-width:200px;
+}
+.deckSection .leaderSection img, .deckSection .deckCards .card-container img {
+  width:100%;
+}
+.deckSection .leaderSection ul {
+  list-style-type: none;
+  padding-left: 0px;
+}
+.deckSection .leaderSection > h3 {
+  margin-bottom:0px;
+  margin-top:0px;
+}
+.deckSection .leaderSection ul {
+  margin-top:0px;
+}
+.deckSection .leaderSection ul h3 {
+  margin-bottom: 0px;
+}
+.deckSection h3 {
+  text-align:center;
+}
+.deck-builder .deck-cards-container {
+  display: grid; /* Use grid layout */
+  grid-template-columns: auto 1fr; /* Two columns: one for leaderSection, one for deckCards */
+  gap: 10px; /* Optional: spacing between grid items */
+}
+
+.deck-builder .leaderSection {
+  grid-row: 1; /* Keep the leaderSection in the first row */
+}
+
+.deck-builder .deckCards {
+  display: grid; /* Use grid for the deckCards section */
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); /* Flexible columns for cards */
+  gap: 10px; /* Spacing between cards */
+  grid-column: 2; /* Ensure deckCards stays in the second column */
+}
+.deck-builder .deckCards .card-container {
+  margin:0px;
+}
+
+
+
+
+
+/* Share Module */
+.MuiDialog-root .MuiPaper-elevation {
+  width:900px;
+  max-width:80%;
+}
+
+.viewBttnHldr {
+  text-align: center;
+}
+.deckBuilderViewDeckbttn {
+  width: 90%;
+  color: #fff;
+  background-color: black;
+  padding: 10px;
 }

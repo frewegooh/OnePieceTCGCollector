@@ -11,26 +11,28 @@ const ShareModal = ({ url, onClose }) => {
     };
 
     return (
-        <Dialog open={true} onClose={onClose}>
-            <DialogTitle>Share Deck</DialogTitle>
-            <DialogContent>
-                {showCopyNotification && (
-                    <div style={{ color: 'green', marginBottom: '10px' }}>
-                        Link Copied!
-                    </div>
-                )}
-                <TextField
-                    fullWidth
-                    value={url}
-                    readOnly
-                    margin="dense"
-                />
-            </DialogContent>
-            <DialogActions>
-                <Button onClick={handleCopy}>Copy URL</Button>
-                <Button onClick={onClose}>Close</Button>
-            </DialogActions>
-        </Dialog>
+        <div className='shareModule'>
+            <Dialog open={true} onClose={onClose}>
+                <DialogTitle>Share Deck</DialogTitle>
+                <DialogContent>
+                    {showCopyNotification && (
+                        <div style={{ color: 'green', marginBottom: '10px' }}>
+                            Link Copied!
+                        </div>
+                    )}
+                    <TextField
+                        fullWidth
+                        value={url}
+                        readOnly
+                        margin="dense"
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCopy}>Copy URL</Button>
+                    <Button onClick={onClose}>Close</Button>
+                </DialogActions>
+            </Dialog>
+        </div>
     );
 };
 

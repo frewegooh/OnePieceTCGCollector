@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { auth } from '../firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { Link } from 'react-router-dom';
 
 const Register = () => {
     const [email, setEmail] = useState('');
@@ -37,10 +38,6 @@ const Register = () => {
 
     return (
         <div>
-            <div className='logoHolder'>
-                <img src="/Logo-Horz.png" alt="Logo" className="menuLogo" />
-            </div>
-
             <h2>Register</h2>
             {error && <p style={{ color: 'red' }}>{error}</p>}
             <div className="form-group">
@@ -71,6 +68,11 @@ const Register = () => {
                 />
             </div>
             <button onClick={handleRegister}>Register</button>
+
+            <div className='registerLogin'>
+                <p>Already have an account?</p>
+                <Link to="/login">Login here</Link>
+            </div>
         </div>
     );
 };

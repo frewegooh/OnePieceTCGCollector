@@ -12,6 +12,7 @@ const CardList = ({
     primaryButtonLabel,
     enableCardClick,
     showQuantity = true,    
+    deckQuantities = {}    // Add this new prop
 }) => {
     const { currentUser } = useAuth();
     const [showLoginPrompt, setShowLoginPrompt] = useState(false);
@@ -56,6 +57,13 @@ const CardList = ({
                             className="cardListCard"
                             style={{ cursor: 'pointer' }}
                         >
+                            {/* Quantity for Deck Builder */}
+                            {deckQuantities && deckQuantities[card.productId] > 0 && (
+                                <div className="deck-quantity">
+                                    {deckQuantities[card.productId]}
+                                </div>
+                            )}
+
                             <img 
                                 src={getImageUrl(card.imageUrl)} 
                                 alt={card.cleanName} 
