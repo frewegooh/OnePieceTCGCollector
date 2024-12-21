@@ -18,7 +18,7 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
     const [showLeaderPicker, setShowLeaderPicker] = useState(false);
     const [selectedCard, setSelectedCard] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [displayedCards, setDisplayedCards] = useState(35);
+    const [displayedCards, setDisplayedCards] = useState(55);
     const [availableColors, setAvailableColors] = useState([]);
     const [multicolorOnly, setMulticolorOnly] = useState(false);
     const [selectedTypes, setSelectedTypes] = useState([]);
@@ -39,8 +39,7 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
     const [showOwnedOnly, setShowOwnedOnly] = useState(false);
     const [deckName, setDeckName] = useState('');
     const [showDeckBuilder, setShowDeckBuilder] = useState(false);
-
-    const leaderCards = cards?.filter((card) => card.extCardType === 'Leader') || [];
+    //const leaderCards = cards?.filter((card) => card.extCardType === 'Leader') || [];
 
     // Infinite Scroll
     useEffect(() => {
@@ -73,6 +72,12 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
             setFilteredCards(cards);
         }
     }, [leader, cards]);
+
+    useEffect(() => {
+        if (showLeaderPicker) {
+            setSelectedTypes(['Leader']);
+        }
+    }, [showLeaderPicker]);
 
     // Modify handleSaveDeck to check auth
     const handleSaveDeck = async () => {
@@ -228,7 +233,7 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
                 selectedPowerValues.length === 0 || selectedPowerValues.includes(card.extPower);
 
             const matchesGroup =
-                !selectedGroupID || String(card.groupID) === String(selectedGroupID);
+                !selectedGroupID || String(card.groupId) === String(selectedGroupID);
 
             const matchesAttribute =
                 selectedAttributes.length === 0 ||
@@ -316,10 +321,55 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
     };
 
     // Add card detail viewing functionality
-    const handleViewDetails = (card) => {
-        const cardIndex = filteredCards.findIndex(c => c.productId === card.productId);
-        setSelectedCard({ ...card, index: cardIndex });
+    const handleViewDetails = (card, source) => {
+        let cardIndex;
+        const displayedCardArray = showLeaderPicker 
+            ? filteredCards.filter(card => card.extCardType === 'Leader').slice(0, displayedCards)
+            : filteredCards.slice(0, displayedCards);
+        
+        if (source === 'deck') {
+            cardIndex = deck.findIndex(c => c.productId === card.productId);
+        } else {
+            cardIndex = displayedCardArray.findIndex(c => c.productId === card.productId);
+        }
+        
+        setSelectedCard({ 
+            ...card, 
+            index: cardIndex, 
+            source: source,
+            displayedArray: displayedCardArray 
+        });
         setIsModalOpen(true);
+    };
+
+    const handlePreviousCard = () => {
+        if (!selectedCard) return;
+        
+        const cardArray = selectedCard.source === 'deck' ? deck : selectedCard.displayedArray;
+        if (selectedCard.index > 0) {
+            const previousCard = cardArray[selectedCard.index - 1];
+            setSelectedCard({ 
+                ...previousCard, 
+                index: selectedCard.index - 1,
+                source: selectedCard.source,
+                displayedArray: selectedCard.displayedArray
+            });
+        }
+    };
+
+    const handleNextCard = () => {
+        if (!selectedCard) return;
+        
+        const cardArray = selectedCard.source === 'deck' ? deck : selectedCard.displayedArray;
+        if (selectedCard.index < cardArray.length - 1) {
+            const nextCard = cardArray[selectedCard.index + 1];
+            setSelectedCard({ 
+                ...nextCard, 
+                index: selectedCard.index + 1,
+                source: selectedCard.source,
+                displayedArray: selectedCard.displayedArray
+            });
+        }
     };
 
 
@@ -331,36 +381,36 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
     // Return JSX
     return (
         <div className="deck-builder">
-    <div className="cardBuilderPar">
-        <div className="deckSection">
-            <div className='deckBuilderHead'>
-                <h2>Your Deck ({deck ? deck.reduce((sum, card) => sum + card.quantity, 0) : 0}/50)</h2>
-                <input
-                    type="text"
-                    value={deckName}
-                    onChange={(e) => setDeckName(e.target.value)}
-                    placeholder="Enter deck name"
-                    className="deck-name-input"
-                />
-                <button 
-                    onClick={handleSaveDeck} 
-                    disabled={!leader || !deck?.length || !deckName.trim()}
-                >
-                    {currentUser ? 'Save Deck' : 'Login to Save Deck'}
-                </button>
-                <LoginPrompt 
-                    open={showLoginPrompt} 
-                    onClose={() => setShowLoginPrompt(false)} 
-                />
-            </div>
-            <div className="deck-cards-container">
-                {!leader ? (
-                    <button onClick={() => {
-                        setShowLeaderPicker(true);
-                        setShowDeckBuilder(true);
-                    }}>Pick Leader</button>
-                ) : (
-                    <>
+            <div className="cardBuilderPar">
+                <div className="deckSection">
+                    <div className='deckBuilderHead'>
+                        <h2>Your Deck ({deck ? deck.reduce((sum, card) => sum + card.quantity, 0) : 0}/50)</h2>
+                        <input
+                            type="text"
+                            value={deckName}
+                            onChange={(e) => setDeckName(e.target.value)}
+                            placeholder="Enter deck name"
+                            className="deck-name-input"
+                        />
+                        <button 
+                            onClick={handleSaveDeck} 
+                            disabled={!leader || !deck?.length || !deckName.trim()}
+                        >
+                            {currentUser ? 'Save Deck' : 'Login to Save Deck'}
+                        </button>
+                        <LoginPrompt 
+                            open={showLoginPrompt} 
+                            onClose={() => setShowLoginPrompt(false)} 
+                        />
+                    </div>
+                    <div className="deck-cards-container">
+                        {!leader ? (
+                            <button onClick={() => {
+                                setShowLeaderPicker(true);
+                                setShowDeckBuilder(true);
+                            }}>Pick Leader</button>
+                        ) : (
+                            <>
                         <div className="leaderSection">
                             <h3>Leader</h3>
                             <CardList 
@@ -370,7 +420,10 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
                                     setLeader(null);
                                     setShowLeaderPicker(false);
                                 }}
+                                onPrimaryButtonClick={(card) => handleViewDetails(card, 'leader')}
+                                primaryButtonLabel="Details"
                                 secondaryButtonLabel="-"
+                                enableCardClick={true}
                             />
                         </div>
                         <div className="deckCards">
@@ -385,80 +438,96 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
                                     <div className="card-controls">
                                         <button onClick={() => handleRemoveFromDeck(card)}>-</button>
                                         <button onClick={() => handleAddToDeck(card)}>+</button>
-                                        <button onClick={() => handleViewDetails(card)}>Details</button>
+                                        <button onClick={() => handleViewDetails(card, 'deck')}>Details</button>
                                     </div>
                                 </div>
                             ))}
                         </div>
-                        {!showDeckBuilder && (
-                            <button onClick={() => setShowDeckBuilder(true)}>Add Cards</button>
-                        )}
+                    {!showDeckBuilder && (
+                        <button onClick={() => {
+                            setShowDeckBuilder(true);
+                            setSelectedTypes([]);  // This clears the Leader type filter
+                        }}>Add Cards</button>
+                    )}
                     </>
                 )}
             </div>
         </div>
         
         {showDeckBuilder && (
-            <div className='deckBuilderContainer' style={{position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'white', zIndex: 10}}>
-
-                <div className="sideFilterPar">
-                    <FilterSidebar
-                        cards={cards}
-                        onFilteredCardsChange={setFilteredCards}
-                        selectedColors={selectedColors}
-                        onColorChange={setSelectedColors}
-                        availableColors={availableColors}
-                        multicolorOnly={multicolorOnly}
-                        onMulticolorChange={() => setMulticolorOnly(!multicolorOnly)}
-                        searchQuery={searchQuery}
-                        onSearchChange={setSearchQuery}
-                        selectedTypes={selectedTypes}
-                        onTypeChange={setSelectedTypes}
-                       //availableTypes={['Character', 'Event', 'Stage', 'Leader']}
-                        selectedCostValues={selectedCostValues}
-                        onCostChange={setSelectedCostValues}
-                        availableCostValues={availableCostValues}
-                        selectedPowerValues={selectedPowerValues}
-                        onPowerChange={setSelectedPowerValues}
-                        availablePowerValues={availablePowerValues}
-                        selectedCounterValues={selectedCounterValues}
-                        onCounterChange={setSelectedCounterValues}
-                        availableCounterValues={availableCounterValues}
-                        selectedAttributes={selectedAttributes}
-                        onAttributeChange={setSelectedAttributes}
-                        availableAttributes={availableAttributes}
-                        availableTypes={['Leader']}
-                        selectedGroupID={selectedGroupID}
-                        onGroupChange={setSelectedGroupID}
-                        groupMap={groupMap}
-                        showOwnedOnly={showOwnedOnly}
-                        onOwnedOnlyChange={() => setShowOwnedOnly(!showOwnedOnly)}
-                        isLeaderPicker={showLeaderPicker} // Add this new prop
-                        // Remove other filter props when picking leader
-                        {...(!showLeaderPicker && {
-                            selectedCostValues,
-                            onCostChange: setSelectedCostValues,
-                            availableCostValues,
-                            selectedPowerValues,
-                            onPowerChange: setSelectedPowerValues,
-                            availablePowerValues,
-                            selectedCounterValues,
-                            onCounterChange: setSelectedCounterValues,
-                            availableCounterValues,
-                            selectedAttributes,
-                            onAttributeChange: setSelectedAttributes,
-                            availableAttributes
-                        })}
-                    />
-                </div>
-
+            <div className='deckBuilderContainer' style={{
+                position: 'absolute', 
+                top: 0, 
+                left: 0, 
+                right: 0, 
+                bottom: 0, 
+                background: 'white', 
+                zIndex: 10,
+                display: 'flex',
+                flexDirection: 'column'
+            }}>
+                    <div className='builderCardPickerHolder' style={{
+                        display: 'flex',
+                        flex: 1,
+                        minHeight: 0  // This is crucial for proper scrolling
+                    }}>
+                        <div className="sideFilterPar">
+                            <FilterSidebar
+                                cards={cards}
+                                onFilteredCardsChange={setFilteredCards}
+                                selectedColors={selectedColors}
+                                onColorChange={setSelectedColors}
+                                availableColors={availableColors}
+                                multicolorOnly={multicolorOnly}
+                                onMulticolorChange={() => setMulticolorOnly(!multicolorOnly)}
+                                searchQuery={searchQuery}
+                                onSearchChange={setSearchQuery}
+                                selectedTypes={selectedTypes}
+                                onTypeChange={setSelectedTypes}
+                            //availableTypes={['Character', 'Event', 'Stage', 'Leader']}
+                                selectedCostValues={selectedCostValues}
+                                onCostChange={setSelectedCostValues}
+                                availableCostValues={availableCostValues}
+                                selectedPowerValues={selectedPowerValues}
+                                onPowerChange={setSelectedPowerValues}
+                                availablePowerValues={availablePowerValues}
+                                selectedCounterValues={selectedCounterValues}
+                                onCounterChange={setSelectedCounterValues}
+                                availableCounterValues={availableCounterValues}
+                                selectedAttributes={selectedAttributes}
+                                onAttributeChange={setSelectedAttributes}
+                                availableAttributes={availableAttributes}
+                                availableTypes={['Character', 'Event', 'Stage', 'Leader']}
+                                selectedGroupID={selectedGroupID}
+                                onGroupChange={setSelectedGroupID}
+                                groupMap={groupMap}
+                                showOwnedOnly={showOwnedOnly}
+                                onOwnedOnlyChange={() => setShowOwnedOnly(!showOwnedOnly)}
+                                isLeaderPicker={showLeaderPicker} // Add this new prop
+                                // Remove other filter props when picking leader
+                                {...(!showLeaderPicker && {
+                                    selectedCostValues,
+                                    onCostChange: setSelectedCostValues,
+                                    availableCostValues,
+                                    selectedPowerValues,
+                                    onPowerChange: setSelectedPowerValues,
+                                    availablePowerValues,
+                                    selectedCounterValues,
+                                    onCounterChange: setSelectedCounterValues,
+                                    availableCounterValues,
+                                    selectedAttributes,
+                                    onAttributeChange: setSelectedAttributes,
+                                    availableAttributes
+                                })}
+                            />
+                        </div>
                 <div className="rightCardPanel cardListCSS">
                     <CardList
                         cards={showLeaderPicker 
                             ? filteredCards.filter(card => card.extCardType === 'Leader').slice(0, displayedCards)
                             : filteredCards.slice(0, displayedCards)}
                         onSecondaryButtonClick={showLeaderPicker ? handlePickLeader : handleAddToDeck}
-                        onPrimaryButtonClick={handleViewDetails}
+                        onPrimaryButtonClick={(card) => handleViewDetails(card, 'picker')}
                         onCardClick={handleViewDetails}
                         primaryButtonLabel="Details"
                         secondaryButtonLabel="+"
@@ -476,14 +545,21 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
                         onClick={() => setShowDeckBuilder(false)}
                         className='deckBuilderViewDeckbttn'
                     >
-                        Close
+                        View Deck / Close
                     </button>
                 </div>
+            </div>
             </div>
         )}
     </div>
         <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-            {selectedCard && <CardDetail card={selectedCard} />}
+        {selectedCard && (
+            <CardDetail 
+                card={selectedCard} 
+                onPrevious={selectedCard.source !== 'leader' ? handlePreviousCard : undefined}
+                onNext={selectedCard.source !== 'leader' ? handleNextCard : undefined}
+            />
+        )}
         </Modal>
         </div>
     );

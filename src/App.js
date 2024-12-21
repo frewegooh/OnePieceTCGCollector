@@ -469,11 +469,12 @@ const App = () => {
 
     return (
         <Router>
-            <div className="App" style={{ display: 'flex' }}>
+            <div className="App">
                     <div>
                         <div className="navHolder">
                             <header>
-                                <Link to="/">
+                                <Link to="/" onClick={() => {if (window.location.pathname === '/') window.location.reload();
+                                    }}>
                                     <img src="/Logo-Horz.png" alt="Logo" className="menuLogo" />
                                 </Link>
                                 <div className="hamburger" onClick={() => setIsMenuOpen(!isMenuOpen)}>
@@ -482,9 +483,18 @@ const App = () => {
                                     <span></span>
                                 </div>
                                 <nav className={isMenuOpen ? 'nav-active' : ''}>
-                                    <Link to="/" onClick={() => setIsMenuOpen(false)}>Home</Link>
-                                    <Link to="/deck-builder" onClick={() => setIsMenuOpen(false)}>Deck Builder</Link>
-                                    <Link to="/my-decks" onClick={() => setIsMenuOpen(false)}>My Decks</Link>
+                                    <Link to="/" onClick={() => {
+                                        setIsMenuOpen(false);
+                                        if (window.location.pathname === '/') window.location.reload();
+                                    }}>Home</Link>
+                                    <Link to="/deck-builder" onClick={() => {
+                                        setIsMenuOpen(false);
+                                        if (window.location.pathname === '/deck-builder') window.location.reload();
+                                    }}>Deck Builder</Link>
+                                    <Link to="/my-decks" onClick={() => {
+                                        setIsMenuOpen(false);
+                                        if (window.location.pathname === '/my-decks') window.location.reload();
+                                    }}>My Decks</Link>
                                     {currentUser ? (
                                         <Link 
                                             className="logoutButton" 
