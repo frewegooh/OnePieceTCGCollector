@@ -262,6 +262,7 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
         selectedAttributes,
         selectedCounterValues,
         showOwnedOnly,
+        showLeaderPicker
     ]);
 
 
@@ -413,7 +414,7 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
                         onSearchChange={setSearchQuery}
                         selectedTypes={selectedTypes}
                         onTypeChange={setSelectedTypes}
-                        availableTypes={['Character', 'Event', 'Stage', 'Leader']}
+                       //availableTypes={['Character', 'Event', 'Stage', 'Leader']}
                         selectedCostValues={selectedCostValues}
                         onCostChange={setSelectedCostValues}
                         availableCostValues={availableCostValues}
@@ -426,18 +427,35 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
                         selectedAttributes={selectedAttributes}
                         onAttributeChange={setSelectedAttributes}
                         availableAttributes={availableAttributes}
+                        availableTypes={['Leader']}
                         selectedGroupID={selectedGroupID}
                         onGroupChange={setSelectedGroupID}
                         groupMap={groupMap}
                         showOwnedOnly={showOwnedOnly}
                         onOwnedOnlyChange={() => setShowOwnedOnly(!showOwnedOnly)}
+                        isLeaderPicker={showLeaderPicker} // Add this new prop
+                        // Remove other filter props when picking leader
+                        {...(!showLeaderPicker && {
+                            selectedCostValues,
+                            onCostChange: setSelectedCostValues,
+                            availableCostValues,
+                            selectedPowerValues,
+                            onPowerChange: setSelectedPowerValues,
+                            availablePowerValues,
+                            selectedCounterValues,
+                            onCounterChange: setSelectedCounterValues,
+                            availableCounterValues,
+                            selectedAttributes,
+                            onAttributeChange: setSelectedAttributes,
+                            availableAttributes
+                        })}
                     />
                 </div>
 
                 <div className="rightCardPanel cardListCSS">
                     <CardList
                         cards={showLeaderPicker 
-                            ? leaderCards.slice(0, displayedCards) 
+                            ? filteredCards.filter(card => card.extCardType === 'Leader').slice(0, displayedCards)
                             : filteredCards.slice(0, displayedCards)}
                         onSecondaryButtonClick={showLeaderPicker ? handlePickLeader : handleAddToDeck}
                         onPrimaryButtonClick={handleViewDetails}
