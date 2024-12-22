@@ -169,6 +169,11 @@ nav a:hover {
   margin-left:10px;
   margin-right:10px;
 }
+.sideFilter > div {
+  margin-left:3px;
+  margin-right:3px;
+}
+
 
 .sideFilterPar, .sideFilter ul.dropdown-options li > label {
   width: 100%;
@@ -521,7 +526,9 @@ input[type=text]:focus {
 .deck-view {
   padding: 20px;
 }
-
+.deck-view .card-quantity {
+  margin-top:0px !important;
+}
 .deck-header {
   display: flex;
   justify-content: space-between;
@@ -723,17 +730,21 @@ input[type=text]:focus {
   position: relative;
 }
 
-.deckSection .leaderSection, .deckSection .deckCards .card-container {
+.deckSection .leaderSection, .deckSection .deckCards .card-container, .deck-view .deckCards .card-container {
   max-width:200px;
 }
-.deckSection .leaderSection img, .deckSection .deckCards .card-container img {
+.deck-view .deckCards .card-container {
+  margin-left:0px !important;
+  margin-right:0px !important;
+}
+.deckSection .leaderSection img, .deckSection .deckCards .card-container img , .deck-view .deckCards .card-container img{
   width:100%;
 }
 .deckSection .leaderSection ul {
   list-style-type: none;
   padding-left: 0px;
 }
-.deckSection .leaderSection > h3 {
+.deckSection .leaderSection > h3, .deck-view .leaderSection > h2 {
   margin-bottom:0px;
   margin-top:0px;
 }
@@ -743,10 +754,10 @@ input[type=text]:focus {
 .deckSection .leaderSection ul h3 {
   margin-bottom: 0px;
 }
-.deckSection h3 {
+.deckSection h3, .deck-view .leaderSection > h2 {
   text-align:center;
 }
-.deck-builder .deck-cards-container {
+.deck-builder .deck-cards-container, .deck-view .deck-cards-container {
   display: grid; /* Use grid layout */
   grid-template-columns: auto 1fr; /* Two columns: one for leaderSection, one for deckCards */
   gap: 10px; /* Optional: spacing between grid items */
@@ -756,7 +767,7 @@ input[type=text]:focus {
   grid-row: 1; /* Keep the leaderSection in the first row */
 }
 
-.deck-builder .deckCards {
+.deck-builder .deckCards, .deck-view .deckCards {
   display: grid; /* Use grid for the deckCards section */
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); /* Flexible columns for cards */
   gap: 10px; /* Spacing between cards */
@@ -767,6 +778,12 @@ input[type=text]:focus {
 }
 .deck-builder {
 
+}
+@media (max-width:980px) {
+  .deck-builder .deck-cards-container {
+    display:flex;
+    flex-direction: column;
+  }
 }
 
 

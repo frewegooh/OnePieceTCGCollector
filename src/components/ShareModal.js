@@ -36,4 +36,43 @@ const ShareModal = ({ url, onClose }) => {
     );
 };
 
+
+const MessageModal = ({ 
+    isOpen, 
+    onClose, 
+    title, 
+    message, 
+    showInput, 
+    inputValue, 
+    actions,
+    showCopyButton 
+}) => {
+    const handleCopy = () => {
+        navigator.clipboard.writeText(inputValue);
+        // You could trigger a temporary success message here
+    };
+
+    return (
+        <Dialog open={isOpen} onClose={onClose}>
+            <DialogTitle>{title}</DialogTitle>
+            <DialogContent>
+                <p>{message}</p>
+                {showInput && (
+                    <TextField
+                        fullWidth
+                        value={inputValue}
+                        readOnly
+                        margin="dense"
+                    />
+                )}
+            </DialogContent>
+            <DialogActions>
+                {showCopyButton && <Button onClick={handleCopy}>Copy URL</Button>}
+                {actions || <Button onClick={onClose}>Close</Button>}
+            </DialogActions>
+        </Dialog>
+    );
+};
+
+export { MessageModal };
 export default ShareModal;

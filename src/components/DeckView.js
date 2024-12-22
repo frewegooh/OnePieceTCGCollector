@@ -90,7 +90,7 @@ const DeckView = ({ getImageUrl }) => {
     const handleDelete = async () => {
         if (window.confirm('Are you sure you want to delete this deck?')) {
             await deleteDoc(doc(firestore, 'decks', deckId));
-            navigate('/decks');
+            navigate('/my-decks'); 
         }
         handleMenuClose();
     };
@@ -105,7 +105,7 @@ const DeckView = ({ getImageUrl }) => {
     return (
         <div className="deck-view">
             <div className="deck-header">
-                <h1>Deck Name: {deck.name}</h1>
+                <h1>{deck.name}</h1>
                 {isOwner && (
                     <>
                         <MoreVertIcon onClick={handleMenuClick} className="menu-icon" />
@@ -121,38 +121,38 @@ const DeckView = ({ getImageUrl }) => {
                     </>
                 )}
             </div>
+                <div className='deck-cards-container'>
 
-            <div className="deck-cards">
-                <div className="cards-grid">
-                    <div className="deck-leader">
-                        <div className="card-container">
+                    <div className="leaderSection">
                             <h2>Leader</h2>
                             <img 
                                 src={getImageUrl(deck.leader.imageUrl)} 
                                 alt={deck.leader.name}
                                 className="card-image"
                             />
-                        </div>
                     </div>
-                    {deck.cards.map((card, index) => (
-                        <div key={index} className="card-container">
-                            <div className="card-quantity">{card.quantity}</div>
-                            <img 
-                                src={getImageUrl(card.imageUrl)} 
-                                alt={card.name}
-                                className="card-image"
-                            />
-                            <button 
-                                className="viewBttn" 
-                                onClick={() => handleViewDetails(card)}
-                            >
-                                View Details
-                            </button>
+
+                        <div className="deckCards">
+                            
+                            {deck.cards.map((card, index) => (
+                                <div key={index} className="card-container">
+                                    <div className="card-quantity">{card.quantity}</div>
+                                    <img 
+                                        src={getImageUrl(card.imageUrl)} 
+                                        alt={card.name}
+                                        className="card-image"
+                                    />
+                                    <button 
+                                        className="viewBttn" 
+                                        onClick={() => handleViewDetails(card)}
+                                    >
+                                        View Details
+                                    </button>
+                                </div>
+                                
+                            ))}
                         </div>
-                        
-                    ))}
                 </div>
-            </div>
 
             {showShareModal && (
                 <ShareModal 

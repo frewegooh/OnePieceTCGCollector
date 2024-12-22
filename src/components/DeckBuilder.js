@@ -8,7 +8,7 @@ import { firestore } from '../firebase';
 import Papa from 'papaparse';
 import { useAuth } from '../contexts/AuthContext';
 import LoginPrompt from './LoginPrompt';
-
+import { MessageModal } from './ShareModal';
 
 const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl }) => {
     const { currentUser } = useAuth();
@@ -40,6 +40,14 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
     const [deckName, setDeckName] = useState('');
     const [showDeckBuilder, setShowDeckBuilder] = useState(false);
     //const leaderCards = cards?.filter((card) => card.extCardType === 'Leader') || [];
+
+    const [messageModal, setMessageModal] = useState({ 
+        isOpen: false, 
+        title: '', 
+        message: '' 
+    });
+
+
 
     // Infinite Scroll
     useEffect(() => {
@@ -96,7 +104,11 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
         }
 
         if (!deckName.trim()) {
-            alert('Please enter a deck name');
+            setMessageModal({
+                isOpen: true,
+                title: 'Missing Information',
+                message: 'Please enter a deck name'
+            });
             return;
         }
 
@@ -114,10 +126,21 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
         try {
             const deckRef = await addDoc(collection(firestore, 'decks'), deckData);
             const shareableUrl = `${window.location.origin}/deck/${deckRef.id}`;
-            alert(`Deck "${deckName}" saved! Share using: ${shareableUrl}`);
+            setMessageModal({
+                isOpen: true,
+                title: 'Success',
+                message: `Deck "${deckName}" saved!`,
+                showInput: true,
+                inputValue: shareableUrl,
+                showCopyButton: true
+            });
             setDeckName('');
         } catch (error) {
-            alert(`Error saving deck: ${error.message}`);
+            setMessageModal({
+                isOpen: true,
+                title: 'Error',
+                message: `Error saving deck: ${error.message}`
+            });
             console.error('Detailed error:', error);
         }
     };
@@ -279,10 +302,12 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
     const handleAddToDeck = (card) => {
         // Check if trying to add a Leader when one already exists
         if (card.extCardType === 'Leader') {
-            if (deck.some(c => c.extCardType === 'Leader')) {
-                alert('Only one Leader card is allowed in a deck');
-                return;
-            }
+            setMessageModal({
+                isOpen: true,
+                title: 'Invalid Action',
+                message: 'Leaders can only be added through the Pick Leader button'
+            });
+            return;
         }
     
         // Rest of your existing handleAddToDeck logic
@@ -290,7 +315,13 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
         const totalCount = sameNumberCards.reduce((sum, c) => sum + c.quantity, 0);
     
         if (totalCount >= 4) {
-            alert('Maximum 4 cards with same number allowed');
+            setMessageModal({
+                isOpen: true,
+                title: 'Error',
+                message: `Maximum 4 cards with same number allowed`
+            });
+
+            //alert('Maximum 4 cards with same number allowed');
             return;
         }
     
@@ -553,14 +584,19 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
         )}
     </div>
         <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        {selectedCard && (
-            <CardDetail 
-                card={selectedCard} 
-                onPrevious={selectedCard.source !== 'leader' ? handlePreviousCard : undefined}
-                onNext={selectedCard.source !== 'leader' ? handleNextCard : undefined}
-            />
-        )}
+            {selectedCard && (
+                <CardDetail 
+                    card={selectedCard} 
+                    onPrevious={selectedCard.source !== 'leader' ? handlePreviousCard : undefined}
+                    onNext={selectedCard.source !== 'leader' ? handleNextCard : undefined}
+                />
+            )}
         </Modal>
+
+        <MessageModal 
+            {...messageModal}
+            onClose={() => setMessageModal({ ...messageModal, isOpen: false })}
+        />
         </div>
     );
 };
