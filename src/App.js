@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { auth, firestore } from './firebase';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
@@ -9,11 +9,11 @@ import CardList from './components/CardList';
 import CardDetail from './components/CardDetail';
 import Modal from './components/Modal';
 import FilterSidebar from './components/FilterSidebar';
-import DeckBuilder from './components/DeckBuilder';
-import DeckLibrary from './components/DeckLibrary';
+//import DeckBuilder from './components/DeckBuilder';
+//import DeckLibrary from './components/DeckLibrary';
 import './App.css';
-import DeckView from './components/DeckView';
-import DeckEditor from './components/DeckEditor';
+//import DeckView from './components/DeckView';
+//import DeckEditor from './components/DeckEditor';
 import API_URL from './config';
 import { useAuth } from './contexts/AuthContext';
 import LoginPrompt from './components/LoginPrompt';
@@ -46,6 +46,11 @@ const App = () => {
     //const [showLogin, setShowLogin] = useState(true);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const ADMIN_USER_ID = 'uuBS4Z3PcHNLZyzNKfWLw2Oyrg52';
+    const DeckBuilder = lazy(() => import('./components/DeckBuilder'));
+    const DeckLibrary = lazy(() => import('./components/DeckLibrary'));
+    const DeckView = lazy(() => import('./components/DeckView'));
+    const DeckEditor = lazy(() => import('./components/DeckEditor'));
+
 
     //const handleSearchChange = (query) => {
     //    setSearchQuery(query);
@@ -518,99 +523,109 @@ const App = () => {
                             </header>
                         </div>
                         <section className="secBody">
-                            <Routes>
-                                <Route
-                                    path="/"
-                                    element={
-                                        <>
-                                            <div className="sideFilterPar">
-                                            <FilterSidebar
-                                                cards={cards}
-                                                onFilteredCardsChange={setFilteredCards}
-                                                selectedColors={selectedColors}
-                                                onColorChange={handleColorFilterChange}
-                                                availableColors={availableColors}
-                                                multicolorOnly={multicolorOnly}
-                                                onMulticolorChange={() => setMulticolorOnly(!multicolorOnly)}
-                                                searchQuery={searchQuery}
-                                                onSearchChange={setSearchQuery}
-                                                selectedTypes={selectedTypes}
-                                                onTypeChange={setSelectedTypes}
-                                                availableTypes={['Character', 'Event', 'Stage', 'Leader']}
-                                                selectedCostValues={selectedCostValues}
-                                                onCostChange={setSelectedCostValues}
-                                                availableCostValues={availableCostValues}
-                                                selectedPowerValues={selectedPowerValues}
-                                                onPowerChange={setSelectedPowerValues}
-                                                availablePowerValues={availablePowerValues}
-                                                selectedCounterValues={selectedCounterValues}
-                                                onCounterChange={setSelectedCounterValues}
-                                                availableCounterValues={availableCounterValues}
-                                                selectedAttributes={selectedAttributes}
-                                                onAttributeChange={setSelectedAttributes}
-                                                availableAttributes={availableAttributes}
-                                                selectedGroupID={selectedGroupID}
-                                                onGroupChange={setSelectedGroupID}
-                                                groupMap={groupMap}
-                                                showOwnedOnly={showOwnedOnly}
-                                                onOwnedOnlyChange={() => setShowOwnedOnly(!showOwnedOnly)}
-                                            />
-                                            </div>
-
-                                            <div className="rightCardPanel">
-                                                <div className="cardListCSS">
-                                                    <CardList
-                                                        cards={filteredCards.slice(0, displayedCards)}
-                                                        updateQuantity={updateQuantity}
-                                                        onSecondaryButtonClick={handleViewDetails} // This triggers the modal
-                                                        secondaryButtonLabel="View Details"
-                                                        enableCardClick={true}
-                                                        showQuantity={true}
-                                                        getImageUrl={getImageUrl}
-                                                    />
+                        <Suspense fallback={<div>Loading...</div>}>
+                                <Routes>
+                                    <Route
+                                        path="/"
+                                        element={
+                                            <>
+                                                <div className="sideFilterPar">
+                                                <FilterSidebar
+                                                    cards={cards}
+                                                    onFilteredCardsChange={setFilteredCards}
+                                                    selectedColors={selectedColors}
+                                                    onColorChange={handleColorFilterChange}
+                                                    availableColors={availableColors}
+                                                    multicolorOnly={multicolorOnly}
+                                                    onMulticolorChange={() => setMulticolorOnly(!multicolorOnly)}
+                                                    searchQuery={searchQuery}
+                                                    onSearchChange={setSearchQuery}
+                                                    selectedTypes={selectedTypes}
+                                                    onTypeChange={setSelectedTypes}
+                                                    availableTypes={['Character', 'Event', 'Stage', 'Leader']}
+                                                    selectedCostValues={selectedCostValues}
+                                                    onCostChange={setSelectedCostValues}
+                                                    availableCostValues={availableCostValues}
+                                                    selectedPowerValues={selectedPowerValues}
+                                                    onPowerChange={setSelectedPowerValues}
+                                                    availablePowerValues={availablePowerValues}
+                                                    selectedCounterValues={selectedCounterValues}
+                                                    onCounterChange={setSelectedCounterValues}
+                                                    availableCounterValues={availableCounterValues}
+                                                    selectedAttributes={selectedAttributes}
+                                                    onAttributeChange={setSelectedAttributes}
+                                                    availableAttributes={availableAttributes}
+                                                    selectedGroupID={selectedGroupID}
+                                                    onGroupChange={setSelectedGroupID}
+                                                    groupMap={groupMap}
+                                                    showOwnedOnly={showOwnedOnly}
+                                                    onOwnedOnlyChange={() => setShowOwnedOnly(!showOwnedOnly)}
+                                                />
                                                 </div>
-                                            </div>
-                                        </>
-                                    }
-                                />
-                                <Route path="/deck-builder" element={
-                                    <DeckBuilder 
-                                        cards={cards} 
-                                        user={user}
-                                        showOwnedOnly={showOwnedOnly}
-                                        onOwnedOnlyChange={() => setShowOwnedOnly(!showOwnedOnly)}
-                                        getImageUrl={getImageUrl}
+
+                                                <div className="rightCardPanel">
+                                                <div className="total-value">
+                                                    Total Collection Value: $
+                                                    {filteredCards.reduce((total, card) => {
+                                                        const price = parseFloat(card.marketPrice) || 0;
+                                                        const quantity = card.quantity || 0;
+                                                        return total + (price * quantity);
+                                                    }, 0).toFixed(2)}
+                                                </div>
+                                                    <div className="cardListCSS">
+                                                        <CardList
+                                                            cards={filteredCards.slice(0, displayedCards)}
+                                                            updateQuantity={updateQuantity}
+                                                            onSecondaryButtonClick={handleViewDetails} // This triggers the modal
+                                                            secondaryButtonLabel="View Details"
+                                                            enableCardClick={true}
+                                                            showQuantity={true}
+                                                            getImageUrl={getImageUrl}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </>
+                                        }
                                     />
-                                    } />
-                                <Route path="/my-decks" element={<DeckLibrary user={user} getImageUrl={getImageUrl} />} />   
-                                <Route 
-                                    path="/deck/:deckId" 
-                                    element={
-                                        <DeckView 
-                                            mergeDeckWithCurrentCardData={mergeDeckWithCurrentCardData}
-                                            cards={cards}
+                                    <Route path="/deck-builder" element={
+                                        <DeckBuilder 
+                                            cards={cards} 
+                                            user={user}
+                                            showOwnedOnly={showOwnedOnly}
+                                            onOwnedOnlyChange={() => setShowOwnedOnly(!showOwnedOnly)}
                                             getImageUrl={getImageUrl}
                                         />
-                                    } 
-                                />
-                                <Route 
-                                    path="/deck/edit/:deckId" 
-                                    element={
-                                        cards && Array.isArray(cards) && cards.length > 0 ? (
-                                            <DeckEditor 
-                                                cards={cards} 
-                                                user={user}
+                                        } />
+                                    <Route path="/my-decks" element={<DeckLibrary user={user} getImageUrl={getImageUrl} />} />   
+                                    <Route 
+                                        path="/deck/:deckId" 
+                                        element={
+                                            <DeckView 
                                                 mergeDeckWithCurrentCardData={mergeDeckWithCurrentCardData}
+                                                cards={cards}
                                                 getImageUrl={getImageUrl}
                                             />
-                                        ) : (
-                                            <div>Loading...</div>
-                                        )
-                                    } 
-                                />
-                                <Route path="/login" element={<Login />} />
-                                <Route path="/register" element={<Register />} />
-                            </Routes>
+                                        } 
+                                    />
+                                    <Route 
+                                        path="/deck/edit/:deckId" 
+                                        element={
+                                            cards && Array.isArray(cards) && cards.length > 0 ? (
+                                                <DeckEditor 
+                                                    cards={cards} 
+                                                    user={user}
+                                                    mergeDeckWithCurrentCardData={mergeDeckWithCurrentCardData}
+                                                    getImageUrl={getImageUrl}
+                                                />
+                                            ) : (
+                                                <div>Loading...</div>
+                                            )
+                                        } 
+                                    />
+                                    <Route path="/login" element={<Login />} />
+                                    <Route path="/register" element={<Register />} />
+                                </Routes>
+                            </Suspense>
                         </section>
                     </div>
                 <LoginPrompt 

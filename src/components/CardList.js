@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import LoginPrompt from './LoginPrompt';
 import { getImageUrl } from '../config';
@@ -47,6 +47,42 @@ const CardList = ({
         }
     };   
 
+    const LazyImage = ({ src, alt, ...props }) => {
+        const [isLoaded, setIsLoaded] = useState(false);
+        const imgRef = useRef();
+      
+        useEffect(() => {
+          const observer = new IntersectionObserver(
+            ([entry]) => {
+              if (entry.isIntersecting) {
+                setIsLoaded(true);
+                observer.disconnect();
+              }
+            },
+            { threshold: 0.1 }
+          );
+      
+          if (imgRef.current) {
+            observer.observe(imgRef.current);
+          }
+      
+          return () => observer.disconnect();
+        }, []);
+      
+        return (
+          <div ref={imgRef}>
+            {isLoaded ? (
+              <img src={src} alt={alt} {...props} />
+            ) : (
+              <div className="image-placeholder" />
+            )}
+          </div>
+        );
+      };
+
+
+
+
     return (
         <>
             <div>
@@ -64,7 +100,7 @@ const CardList = ({
                                 </div>
                             )}
 
-                            <img 
+                            <LazyImage 
                                 src={getImageUrl(card.imageUrl)} 
                                 alt={card.cleanName} 
                                 onClick={(e) => {

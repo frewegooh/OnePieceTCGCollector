@@ -10,6 +10,7 @@ import API_URL from '../config';
 import { auth } from '../firebase';
 import Modal from './Modal';
 import CardDetail from './CardDetail';
+import DeckAnalytics from './DeckAnalytics';
 
 const DeckView = ({ getImageUrl }) => {
     const { deckId } = useParams();
@@ -197,7 +198,7 @@ const DeckView = ({ getImageUrl }) => {
                 )}
             </Modal>
 
-
+            <DeckAnalytics deck={deck.cards} leader={deck.leader} />
         </div>    
 
 

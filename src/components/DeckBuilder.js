@@ -9,6 +9,7 @@ import Papa from 'papaparse';
 import { useAuth } from '../contexts/AuthContext';
 import LoginPrompt from './LoginPrompt';
 import { MessageModal } from './ShareModal';
+import DeckAnalytics from './DeckAnalytics';
 
 const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl }) => {
     const { currentUser } = useAuth();
@@ -483,6 +484,8 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
                     </>
                 )}
             </div>
+
+            <DeckAnalytics deck={deck} leader={leader} />
         </div>
         
         {showDeckBuilder && (
