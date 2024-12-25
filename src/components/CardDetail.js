@@ -1,5 +1,5 @@
 // src/components/CardDetail.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 //import { formatCardText } from '../utils/textUtils';
 import DOMPurify from 'dompurify';
 import { getImageUrl } from '../config';
@@ -16,7 +16,18 @@ export const formatCardTextWithHTML = (text) => {
 
 const CardDetail = ({ card, onPrevious, onNext }) => {
     const [showInfo, setShowInfo] = useState(false);
-    
+    const [imageUrl, setImageUrl] = useState(null);
+
+    useEffect(() => {
+        const loadImage = async () => {
+            if (card?.imageUrl) {
+                const resolvedUrl = await getImageUrl(card.imageUrl);
+                setImageUrl(resolvedUrl);
+            }
+        };
+        loadImage();
+    }, [card]);
+
     if (!card) return null; // If no card is selected, don't render anything
 
     return (
@@ -38,7 +49,7 @@ const CardDetail = ({ card, onPrevious, onNext }) => {
         <div style={{ padding: '1rem' }} className='cardInfoPop'>
             <div className='imgHolder'>
             <p className='cardDetailTitle'>{card.name}</p>   
-            <img src={getImageUrl(card.imageUrl)} alt={card.cleanName} />
+            {imageUrl && <img src={imageUrl} alt={card.cleanName} />}
                 {/* Go To Product button */}
                 <div className='tcgPlayerBttn'>
                     {card.url && (
@@ -126,4 +137,4 @@ const CardDetail = ({ card, onPrevious, onNext }) => {
     );
 };
 
-export default CardDetail;
+export default React.memo(CardDetail);

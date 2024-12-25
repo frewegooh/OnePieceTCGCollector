@@ -833,3 +833,41 @@ input[type=text]:focus {
   50% { opacity: 1; }
   100% { opacity: 0.6; }
 }
+
+
+/* Card Building Sidebar */
+.deck-analytics .analytics-content h3 {
+  margin-bottom:0px !important;
+}
+.deck-analytics .analytics-content .title{
+  font-weight: 600;
+}
+.deck-analytics .analytics-content .distribution-section {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.deck-analytics .analytics-content .distribution-section .distribution-row {
+  padding: 3px 5px;
+  margin: 5px;
+  border: 2px solid black;
+}
+
+/* Lazy Image Load 
+.card-image {
+  opacity: 0;
+  transition: opacity 0.3s ease-in;
+}
+
+.card-image.loaded {
+  opacity: 1;
+}
+
+.image-placeholder {
+  background: #f0f0f0;
+  width: 100%;
+  height: 300px;
+  border-radius: 8px;
+} */

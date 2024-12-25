@@ -3,41 +3,76 @@ import { useAuth } from '../contexts/AuthContext';
 import LoginPrompt from './LoginPrompt';
 import { getImageUrl } from '../config';
 
-const CardList = ({ 
+const LazyImage = React.memo(({ card, imageUrls, ...props }) => {
+    const [isInView, setIsInView] = useState(false);
+    const imgRef = useRef();
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    setIsInView(true);
+                    observer.disconnect();
+                }
+            },
+            { threshold: 0.1, rootMargin: '50px' }
+        );
+
+        if (imgRef.current && !isInView) {
+            observer.observe(imgRef.current);
+        }
+
+        return () => observer.disconnect();
+    }, [isInView]);
+
+    return (
+        <div ref={imgRef} className="image-container">
+            {isInView && (
+                <img
+                    src={getImageUrl(card.imageUrl)}
+                    alt={card.cleanName}
+                    className="card-image loaded"
+                    {...props}
+                />
+            )}
+            {!isInView && <div className="image-placeholder" />}
+        </div>
+    );
+});
+
+function CardList({ 
     cards, 
     updateQuantity, 
     onSecondaryButtonClick, 
     onPrimaryButtonClick,
     secondaryButtonLabel, 
-    primaryButtonLabel,
-    enableCardClick,
-    showQuantity = true,    
-    deckQuantities = {}    // Add this new prop
-}) => {
+    primaryButtonLabel, 
+    enableCardClick, 
+    showQuantity = true, 
+    deckQuantities = {} 
+}) {
     const { currentUser } = useAuth();
     const [showLoginPrompt, setShowLoginPrompt] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
-
-    //const getLocalImageUrl = (url) => {
-    //    const imageName = url.split('/').pop().replace('_200w.jpg', '_400w.jpg');
-    //    return `${process.env.PUBLIC_URL}/images/${imageName}`;
-    //};
+    const [imageUrls, setImageUrls] = useState({});
 
     useEffect(() => {
-        if (cards === undefined) {
-            setIsLoading(true);
-        } else {
+        const loadImages = async () => {
+            const newImageUrls = {};
+            for (const card of cards) {
+                if (!imageUrls[card.productId]) {
+                    const resolvedUrl = await getImageUrl(card.imageUrl);
+                    newImageUrls[card.productId] = resolvedUrl;
+                }
+            }
+            if (Object.keys(newImageUrls).length > 0) {
+                setImageUrls(prev => ({...prev, ...newImageUrls}));
+            }
             setIsLoading(false);
-        }
-    }, [cards]);
-
-    if (isLoading) {
-        return <div>Loading Cards...</div>;
-    }
-
-    if (!cards?.length) {
-        return <div>No Cards Found</div>;
-    }
+        };
+        
+        loadImages();
+    }, [cards, imageUrls]);
 
     const handleQuantityUpdate = (productId, newQuantity) => {
         if (currentUser) {
@@ -45,43 +80,10 @@ const CardList = ({
         } else {
             setShowLoginPrompt(true);
         }
-    };   
+    };
 
-    const LazyImage = ({ src, alt, ...props }) => {
-        const [isLoaded, setIsLoaded] = useState(false);
-        const imgRef = useRef();
-      
-        useEffect(() => {
-          const observer = new IntersectionObserver(
-            ([entry]) => {
-              if (entry.isIntersecting) {
-                setIsLoaded(true);
-                observer.disconnect();
-              }
-            },
-            { threshold: 0.1 }
-          );
-      
-          if (imgRef.current) {
-            observer.observe(imgRef.current);
-          }
-      
-          return () => observer.disconnect();
-        }, []);
-      
-        return (
-          <div ref={imgRef}>
-            {isLoaded ? (
-              <img src={src} alt={alt} {...props} />
-            ) : (
-              <div className="image-placeholder" />
-            )}
-          </div>
-        );
-      };
-
-
-
+    if (isLoading) return <div>Loading Cards...</div>;
+    if (!cards?.length) return <div>No Cards Found</div>;
 
     return (
         <>
@@ -93,16 +95,14 @@ const CardList = ({
                             className="cardListCard"
                             style={{ cursor: 'pointer' }}
                         >
-                            {/* Quantity for Deck Builder */}
-                            {deckQuantities && deckQuantities[card.productId] > 0 && (
+                            {deckQuantities[card.productId] > 0 && (
                                 <div className="deck-quantity">
                                     {deckQuantities[card.productId]}
                                 </div>
                             )}
 
                             <LazyImage 
-                                src={getImageUrl(card.imageUrl)} 
-                                alt={card.cleanName} 
+                                card={card}
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     onSecondaryButtonClick(card);
@@ -153,6 +153,6 @@ const CardList = ({
             />
         </>
     );
-};
+}
 
-export default CardList;
+export default React.memo(CardList);

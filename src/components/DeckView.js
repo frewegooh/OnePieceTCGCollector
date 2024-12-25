@@ -11,6 +11,7 @@ import { auth } from '../firebase';
 import Modal from './Modal';
 import CardDetail from './CardDetail';
 import DeckAnalytics from './DeckAnalytics';
+//import { getImageUrl } from '../config';
 
 const DeckView = ({ getImageUrl }) => {
     const { deckId } = useParams();
@@ -127,7 +128,7 @@ const DeckView = ({ getImageUrl }) => {
                     <div className="leaderSection">
                             <h2>Leader</h2>
                             <img 
-                                src={getImageUrl(deck.leader.imageUrl)} 
+                                src={getImageUrl(deck.leader.imageUrl)}
                                 alt={deck.leader.name}
                                 className="card-image"
                             />
@@ -139,7 +140,7 @@ const DeckView = ({ getImageUrl }) => {
                                 <div key={index} className="card-container">
                                     <div className="card-quantity">{card.quantity}</div>
                                     <img 
-                                        src={getImageUrl(card.imageUrl)} 
+                                        src={getImageUrl(card.imageUrl)}
                                         alt={card.name}
                                         className="card-image"
                                     />

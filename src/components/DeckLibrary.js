@@ -3,45 +3,36 @@ import { collection, query, where, getDocs } from 'firebase/firestore';
 import { firestore } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 import API_URL from '../config';
+import { getImageUrl } from '../config';
 
-// Add cards to the props
-const DeckLibrary = ({ user, getImageUrl }) => {
+function DeckLibrary({ user, getImageUrl }) {
     const [decks, setDecks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [cardData, setCardData] = useState([]);
     const navigate = useNavigate();
 
-    // Update the fetch call
     useEffect(() => {
         fetch(`${API_URL}/api/cards`)
             .then(response => response.json())
             .then(data => {
-                //console.log('Card data loaded:', data.length, 'cards');
                 setCardData(data);
-            })
-            .catch(error => {
-                //console.log('Error fetching card data:', error);
             });
     }, []);
-
+;
 
     useEffect(() => {
         const fetchUserDecks = async () => {
             if (!user || !cardData.length) return;
-            //console.log('Fetching decks for user:', user.uid);
             
             const decksQuery = query(
                 collection(firestore, 'decks'),
                 where('userId', '==', user.uid)
             );
             const querySnapshot = await getDocs(decksQuery);
-            //console.log('Found decks:', querySnapshot.size);
             
             const userDecks = querySnapshot.docs.map(doc => {
                 const deckData = doc.data();
-                //console.log('Processing deck:', deckData.name);
                 const leaderCard = cardData.find(card => card.productId === deckData.leaderId);
-                //console.log('Leader card found:', leaderCard?.name);
                 
                 return {
                     id: doc.id,
@@ -90,7 +81,7 @@ const DeckLibrary = ({ user, getImageUrl }) => {
                                     src={getImageUrl(deck.leaderImageUrl)}
                                     alt="Deck Leader"
                                     className="deck-preview-image"
-                                  />
+                                />
                             )}
                             <h2>{deck.name}</h2>
                         </div>
@@ -99,6 +90,6 @@ const DeckLibrary = ({ user, getImageUrl }) => {
             )}
         </div>
     );
-};
+}
 
-export default DeckLibrary;
+export default React.memo(DeckLibrary);

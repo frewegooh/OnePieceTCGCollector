@@ -117,70 +117,83 @@ const DeckAnalytics = ({ deck, leader }) => {
                 {isOpen ? '>' : '<'}
             </div>
             <div className="analytics-content">
-                <h3>Card Type Distribution</h3>
-                <div className="distribution-section">
-                    {Object.entries(typeDistribution).map(([type, count]) => (
-                        <div key={type} className="distribution-row">
-                            <span>{type}:</span>
-                            <span>{count}</span>
-                        </div>
-                    ))}
-                </div>
-
-                <h3>Cost Distribution</h3>
-                <BarChart width={300} height={200} data={costData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="value" label={{ value: 'Cost', position: 'bottom' }} />
-                    <YAxis label={{ value: 'Count', angle: -90, position: 'left' }} />
-                    <Tooltip />
-                    <Bar dataKey="count" fill="#8884d8" />
-                </BarChart>
-
-                <h3>Power Distribution</h3>
-                <BarChart width={300} height={200} data={powerData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="value" label={{ value: 'Power', position: 'bottom' }} />
-                    <YAxis label={{ value: 'Count', angle: -90, position: 'left' }} />
-                    <Tooltip />
-                    <Bar dataKey="count" fill="#82ca9d" />
-                </BarChart>
-
-                <h3>Counter Distribution</h3>
-                <div className="distribution-section">
-                    {Object.entries(counterDistribution).map(([counter, count]) => (
-                        <div key={counter} className="distribution-row">
-                            <span>{counter}:</span>
-                            <span>{count}</span>
-                        </div>
-                    ))}
-                </div>
-
-                <h3>Subtype Distribution</h3>
-                <div className="distribution-section">
-                    {Object.entries(subtypeDistribution || {}).map(([subtype, count]) => (
-                        <div key={subtype} className="distribution-row">
-                            <span>{count}x {subtype}</span>
-                        </div>
-                    ))}
-                </div>
-
-                <h3>Special Abilities</h3>
-                <div className="distribution-section">
-                    {Object.entries(specialAbilitiesDistribution || {}).map(([ability, count]) => (
-                        <div key={ability} className="distribution-row">
-                            <span>{count}x {ability}</span>
-                        </div>
-                    ))}
-                </div>
-
-
-                <h3>Deck Value</h3>
-                <div className="distribution-section">
-                    <div className="distribution-row value-row">
-                        <span>Estimated Market Price:</span>
-                        <span>${totalDeckValue}</span>
+                <div className='typeDistribution'>
+                    <h3>Card Type Distribution</h3>
+                    <div className="distribution-section">
+                        {Object.entries(typeDistribution).map(([type, count]) => (
+                            <div key={type} className="distribution-row">
+                                <span className='title'>{type}: </span>
+                                <span>{count}</span>
+                            </div>
+                        ))}
                     </div>
-                </div> 
+                </div>
+
+                <div className='costDistribution'>
+                    <h3>Cost Distribution</h3>
+                    <BarChart width={300} height={200} data={costData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="value" label={{ value: 'Cost', position: 'bottom' }} />
+                        <YAxis label={{ value: 'Count', angle: -90, position: 'left' }} />
+                        <Tooltip />
+                        <Bar dataKey="count" fill="#8884d8" />
+                    </BarChart>
+                </div>
+
+                <div className='powerDistribution'>
+                    <h3>Power Distribution</h3>
+                    <BarChart width={300} height={200} data={powerData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="value" label={{ value: 'Power', position: 'bottom' }} />
+                        <YAxis label={{ value: 'Count', angle: -90, position: 'left' }} />
+                        <Tooltip />
+                        <Bar dataKey="count" fill="#82ca9d" />
+                    </BarChart>
+                </div>
+                
+                <div className='counterDistribution'>
+                    <h3>Counter Distribution</h3>
+                    <div className="distribution-section">
+                        {Object.entries(counterDistribution).map(([counter, count]) => (
+                            <div key={counter} className="distribution-row">
+                                <span className='title'>{counter}: </span>
+                                <span>{count}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                <div className='subtypeDistribution'>
+                    <h3>Subtype Distribution</h3>
+                    <div className="distribution-section">
+                        {Object.entries(subtypeDistribution || {}).map(([subtype, count]) => (
+                            <div key={subtype} className="distribution-row">
+                                <span>{count}x {subtype}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                <div className='specialAbilities'>
+                    <h3>Special Abilities</h3>
+                    <div className="distribution-section">
+                        {Object.entries(specialAbilitiesDistribution || {}).map(([ability, count]) => (
+                            <div key={ability} className="distribution-row">
+                                <span>{count}x {ability}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                <div className='deckValue'>
+                    <h3>Deck Value</h3>
+                    <div className="distribution-section">
+                        <div className="distribution-row value-row">
+                            <span className='title'>Estimated Market Price: </span>
+                            <span>${totalDeckValue}</span>
+                        </div>
+                    </div> 
+                </div>
 
 
 
@@ -189,7 +202,7 @@ const DeckAnalytics = ({ deck, leader }) => {
        
 
 
-            <style jsx>{`
+            <style>{`
                 .deck-analytics {
                     position: fixed;
                     right: -350px;
