@@ -3,13 +3,14 @@ import FilterSidebar from './FilterSidebar';
 import CardList from './CardList';
 import CardDetail from './CardDetail';
 import Modal from './Modal';
-import { addDoc, collection } from 'firebase/firestore';
+import { addDoc, collection, query, where, getDocs, doc, setDoc } from 'firebase/firestore';
 import { firestore } from '../firebase';
 import Papa from 'papaparse';
 import { useAuth } from '../contexts/AuthContext';
 import LoginPrompt from './LoginPrompt';
 import { MessageModal } from './ShareModal';
 import DeckAnalytics from './DeckAnalytics';
+import ImportDeckModal from './ImportDeckModal';
 
 const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl }) => {
     const { currentUser } = useAuth();
@@ -41,6 +42,37 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
     const [deckName, setDeckName] = useState('');
     const [showDeckBuilder, setShowDeckBuilder] = useState(false);
     //const leaderCards = cards?.filter((card) => card.extCardType === 'Leader') || [];
+    const [showImportModal, setShowImportModal] = useState(false);
+
+
+    const handleImportDeck = (matchedCards) => {
+        if (matchedCards.length > 0) {
+            // Find and set the leader
+            const leaderCard = matchedCards.find(card => card.extCardType === 'Leader');
+            if (leaderCard) {
+                setLeader(leaderCard);
+                // Remove leader from deck array
+                const deckCards = matchedCards.filter(card => card.extCardType !== 'Leader');
+                setDeck(deckCards);
+            } else {
+                setDeck(matchedCards);
+            }
+    
+            setMessageModal({
+                isOpen: true,
+                title: 'Success',
+                message: `Imported ${matchedCards.length} cards successfully!`
+            });
+        } else {
+            setMessageModal({
+                isOpen: true,
+                title: 'Error',
+                message: 'No valid cards found in import text'
+            });
+        }
+    };
+
+
 
     const [messageModal, setMessageModal] = useState({ 
         isOpen: false, 
@@ -54,14 +86,25 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
     useEffect(() => {
         const cardListContainer = document.querySelector('.rightCardPanel.cardListCSS');
         if (cardListContainer && showDeckBuilder) {
+            let timeoutId;
             const handleScroll = () => {
-                const { scrollTop, scrollHeight, clientHeight } = cardListContainer;
-                if (scrollTop + clientHeight >= scrollHeight - 50) {
-                    setDisplayedCards(prevDisplayedCards => prevDisplayedCards + 25);
+                if (timeoutId) {
+                    clearTimeout(timeoutId);
                 }
+                timeoutId = setTimeout(() => {
+                    const { scrollTop, scrollHeight, clientHeight } = cardListContainer;
+                    if (scrollTop + clientHeight >= scrollHeight - 50) {
+                        setDisplayedCards(prevDisplayedCards => prevDisplayedCards + 25);
+                    }
+                }, 150);
             };
             cardListContainer.addEventListener('scroll', handleScroll);
-            return () => cardListContainer.removeEventListener('scroll', handleScroll);
+            return () => {
+                cardListContainer.removeEventListener('scroll', handleScroll);
+                if (timeoutId) {
+                    clearTimeout(timeoutId);
+                }
+            };
         }
     }, [showDeckBuilder]);
 
@@ -103,7 +146,7 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
             setShowLoginPrompt(true);
             return;
         }
-
+    
         if (!deckName.trim()) {
             setMessageModal({
                 isOpen: true,
@@ -112,7 +155,7 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
             });
             return;
         }
-
+    
         const deckData = {
             userId: currentUser.uid,
             name: deckName.trim(),
@@ -123,9 +166,26 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
             })),
             timestamp: new Date().toISOString()
         };
-
+    
         try {
-            const deckRef = await addDoc(collection(firestore, 'decks'), deckData);
+            // Query for existing deck with same name
+            const decksQuery = query(
+                collection(firestore, 'decks'),
+                where('userId', '==', currentUser.uid),
+                where('name', '==', deckName.trim())
+            );
+            const querySnapshot = await getDocs(decksQuery);
+    
+            let deckRef;
+            if (!querySnapshot.empty) {
+                // Update existing deck
+                deckRef = doc(firestore, 'decks', querySnapshot.docs[0].id);
+                await setDoc(deckRef, deckData);
+            } else {
+                // Create new deck
+                deckRef = await addDoc(collection(firestore, 'decks'), deckData);
+            }
+    
             const shareableUrl = `${window.location.origin}/deck/${deckRef.id}`;
             setMessageModal({
                 isOpen: true,
@@ -417,6 +477,7 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
                 <div className="deckSection">
                     <div className='deckBuilderHead'>
                         <h2>Your Deck ({deck ? deck.reduce((sum, card) => sum + card.quantity, 0) : 0}/50)</h2>
+                        <button onClick={() => setShowImportModal(true)}>Import Deck</button>
                         <input
                             type="text"
                             value={deckName}
@@ -424,6 +485,7 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
                             placeholder="Enter deck name"
                             className="deck-name-input"
                         />
+                        
                         <button 
                             onClick={handleSaveDeck} 
                             disabled={!leader || !deck?.length || !deckName.trim()}
@@ -595,6 +657,13 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
                 />
             )}
         </Modal>
+
+        <ImportDeckModal 
+            isOpen={showImportModal}
+            onClose={() => setShowImportModal(false)}
+            onImport={handleImportDeck}
+        />
+
 
         <MessageModal 
             {...messageModal}

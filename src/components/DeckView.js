@@ -23,6 +23,7 @@ const DeckView = ({ getImageUrl }) => {
     const [isOwner, setIsOwner] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedCard, setSelectedCard] = useState(null);
+    const [showExportMessage, setShowExportMessage] = useState(false);
 
     const handleViewDetails = (card) => {
         setSelectedCard(card);
@@ -102,6 +103,25 @@ const DeckView = ({ getImageUrl }) => {
         handleMenuClose();
     };
 
+
+    const handleExport = async () => {
+        const leaderText = `1x${deck.leader.extNumber}`;
+        const deckText = deck.cards.map(card => 
+            `${card.quantity}x${card.extNumber}`
+        ).join('\n');
+        const exportText = `${leaderText}\n${deckText}`;
+        
+        try {
+            await navigator.clipboard.writeText(exportText);
+            setShowExportMessage(true);
+            setTimeout(() => setShowExportMessage(false), 2000); // Message disappears after 2 seconds
+        } catch (err) {
+            console.error('Failed to copy text: ', err);
+        }
+        
+        handleMenuClose();
+    };
+
     if (!deck) return <div>Loading deck...</div>;
 
     return (
@@ -119,6 +139,7 @@ const DeckView = ({ getImageUrl }) => {
                             <MenuItem onClick={handleEdit}>Edit Deck</MenuItem>
                             <MenuItem onClick={handleDelete}>Delete Deck</MenuItem>
                             <MenuItem onClick={handleShare}>Share Deck</MenuItem>
+                            <MenuItem onClick={handleExport}>Export Deck</MenuItem>
                         </Menu>
                     </>
                 )}
@@ -161,6 +182,25 @@ const DeckView = ({ getImageUrl }) => {
                     url={`${window.location.origin}/deck/${deckId}`}
                     onClose={() => setShowShareModal(false)}
                 />
+            )}
+
+            {showExportMessage && (
+                <div className="export-message">
+                    Deck Copied
+                    <style jsx>{`
+                        .export-message {
+                            position: fixed;
+                            top: 50%;
+                            left: 50%;
+                            transform: translate(-50%, -50%);
+                            background-color: rgba(0, 0, 0, 0.8);
+                            color: white;
+                            padding: 20px;
+                            border-radius: 5px;
+                            z-index: 1000;
+                        }
+                    `}</style>
+                </div>
             )}
 
             <style jsx>{`
