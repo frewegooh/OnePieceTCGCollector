@@ -21,6 +21,6 @@ export const auth = getAuth(app);
 export const firestore = getFirestore(app);
 
 
-setLogLevel('debug');
+setLogLevel('error');
 
 export default app;

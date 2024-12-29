@@ -3,7 +3,7 @@ import { collection, query, where, getDocs } from 'firebase/firestore';
 import { firestore } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 import API_URL from '../config';
-import { getImageUrl } from '../config';
+//import { getImageUrl } from '../config';
 
 function DeckLibrary({ user, getImageUrl }) {
     const [decks, setDecks] = useState([]);

@@ -12,7 +12,7 @@ const App = () => {
     const { currentUser } = useAuth();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const ADMIN_USER_ID = 'uuBS4Z3PcHNLZyzNKfWLw2Oyrg52';
-    
+    const Home = lazy(() => import('./components/Home'));
     const DeckBuilder = lazy(() => import('./components/DeckBuilder'));
     const DeckLibrary = lazy(() => import('./components/DeckLibrary'));
     const DeckView = lazy(() => import('./components/DeckView'));
@@ -79,9 +79,14 @@ const App = () => {
                             </div>
                             <nav className={isMenuOpen ? 'nav-active' : ''}>
                                 <Link to="/" onClick={() => setIsMenuOpen(false)}>Home</Link>
-                                <Link to="/my-collection" onClick={() => setIsMenuOpen(false)}>My Collection</Link>
-                                <Link to="/deck-builder" onClick={() => setIsMenuOpen(false)}>Deck Builder</Link>
-                                <Link to="/my-decks" onClick={() => setIsMenuOpen(false)}>My Decks</Link>
+                                <Link to="/my-collection" onClick={() => setIsMenuOpen(false)}>Card Tracker</Link>
+                                <div className="dropdown">
+                                    <span>Decks ⌄</span>
+                                    <div className="dropdown-content">
+                                        <Link to="/my-decks" onClick={() => setIsMenuOpen(false)}>My Decks</Link>
+                                        <Link to="/deck-builder" onClick={() => setIsMenuOpen(false)}>Deck Builder</Link>
+                                    </div>
+                                </div>
                                 {currentUser ? (
                                     <Link 
                                         className="logoutButton" 
@@ -107,7 +112,7 @@ const App = () => {
                     <section className="secBody">
                         <Suspense fallback={<div>Loading...</div>}>
                             <Routes>
-                            
+                            <Route path="/" element={<Home getImageUrl={getImageUrl} />} />
                             <Route path="/my-collection" element={<MyCollection getImageUrl={getImageUrl} />} />
                             <Route path="/deck-builder" element={
                                 cards.length > 0 ? (

@@ -195,14 +195,14 @@ const FilterSidebar = ({
         'Royal Bloodlines': '23766'
     };
 
-    const setOrder = [
-        // Main Sets
-        'OP09', 'OP08', 'OP07', 'OP06', 'OP05', 'OP04', 'OP03', 'OP02', 'OP01',
+    //const setOrder = [
+    //    // Main Sets
+    //    'OP09', 'OP08', 'OP07', 'OP06', 'OP05', 'OP04', 'OP03', 'OP02', 'OP01',
         // Starter Decks
-        'ST20', 'ST19', 'ST18', 'ST17', 'ST16', 'ST15', 'ST14', 'ST13', 'ST12',
-        'ST11', 'ST10', 'ST09', 'ST08', 'ST07', 'ST06', 'ST05', 'ST04', 'ST03',
-        'ST02', 'ST01'
-    ];
+    //    'ST20', 'ST19', 'ST18', 'ST17', 'ST16', 'ST15', 'ST14', 'ST13', 'ST12',
+    //    'ST11', 'ST10', 'ST09', 'ST08', 'ST07', 'ST06', 'ST05', 'ST04', 'ST03',
+    //    'ST02', 'ST01'
+    //];
 
     return (
         <div className="sideFilter">
