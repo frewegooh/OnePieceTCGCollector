@@ -12,6 +12,28 @@ import MultiSelectDropdown from './MultiSelectDropdown';
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 const Home = ({ getImageUrl }) => {
+
+
+    const processLeadersByExtNumber = (decks) => {
+        const leaderGroups = {};
+        decks.forEach(deck => {
+            if (deck.leader) {
+                const extNumber = deck.leader.extNumber;
+                if (!leaderGroups[extNumber]) {
+                    leaderGroups[extNumber] = {
+                        count: 0,
+                        name: deck.leader.name,
+                        extNumber: extNumber,
+                        extColor: deck.leader.extColor
+                    };
+                }
+                leaderGroups[extNumber].count++;
+            }
+        });
+        return leaderGroups;
+    };
+
+
     const { currentUser } = useAuth();
     const [cards, setCards] = useState([]);
     const [decks, setDecks] = useState([]);
@@ -21,6 +43,8 @@ const Home = ({ getImageUrl }) => {
     const [userCollection, setUserCollection] = useState([]);
     const navigate = useNavigate();
     //const [multicolorOnly, setMulticolorOnly] = useState(false);
+    const leaderGroups = processLeadersByExtNumber(decks);
+    //console.log('Leader Groups:', leaderGroups);
 
     //const onMulticolorChange = (checked) => {
     //    setMulticolorOnly(checked);
@@ -53,23 +77,66 @@ const Home = ({ getImageUrl }) => {
         loadUserCardData();
     }, [currentUser]); // Empty dependency array means it runs once on mount
     
+    const createLinearGradient = (color1, color2, index, total) => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const segmentAngle = (2 * Math.PI) / total;
+        const startAngle = segmentAngle * index;
+        const endAngle = startAngle + segmentAngle;
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        
+        const gradient = ctx.createLinearGradient(
+            centerX + Math.cos(startAngle) * 100,
+            centerY + Math.sin(startAngle) * 100,
+            centerX + Math.cos(endAngle) * 100,
+            centerY + Math.sin(endAngle) * 100
+        );
+        
+        gradient.addColorStop(0, color1);
+        gradient.addColorStop(0.5, color1);
+        gradient.addColorStop(0.5, color2);
+        gradient.addColorStop(1, color2);
+        
+        return gradient;
+    };
 
+    const colorMap = {
+        'Red': '#b11c1e',
+        'Blue': '#2085bd',
+        'Green': '#208c6a',
+        'Purple': '#7e3a83',
+        'Black': '#262422',
+        'Yellow': '#fae731'
+    };
 
     const pieChartData = {
-        labels: Object.keys(leaderDistribution),
+        labels: Object.values(leaderGroups).map(leader => `${leader.name} (${leader.count})`),
         datasets: [{
-            data: Object.values(leaderDistribution),
-            backgroundColor: [
-                '#FF6384',
-                '#36A2EB',
-                '#FFCE56',
-                '#4BC0C0',
-                '#9966FF',
-                '#FF9F40'
-            ],
+            data: Object.values(leaderGroups).map(leader => leader.count),
+            backgroundColor: Object.values(leaderGroups).map((leader, index, array) => {
+                //console.log('Processing colors for:', leader.name, leader.extColor);
+                const colors = Array.isArray(leader.extColor) ? 
+                    leader.extColor : 
+                    (typeof leader.extColor === 'string' ? leader.extColor.split(';') : []);
+                
+                if (!colors || colors.length === 0) return '#CCCCCC';
+                if (colors.length === 1) return colorMap[colors[0]];
+                return createLinearGradient(colorMap[colors[0]], colorMap[colors[1]], index, array.length);
+            }),
             borderWidth: 1
         }]
     };
+    //console.log('Pie Chart Data:', pieChartData);
+
+
+    // Update the leader dropdown options
+    const leaderOptions = Object.values(leaderGroups).map(leader => (
+        <option key={leader.extNumber} value={leader.extNumber}>
+            {leader.name} ({leader.count})
+        </option>
+    ));
+
 
     const pieOptions = {
         responsive: true,
@@ -77,9 +144,28 @@ const Home = ({ getImageUrl }) => {
         plugins: {
             legend: {
                 position: 'right',
-                onClick: null, // Disables legend clicking
+                onClick: null,
                 labels: {
-                    sort: null // Disables sorting
+                    generateLabels: (chart) => {
+                        const data = chart.data;
+                        return data.labels.map((label, index) => {
+                            const leader = Object.values(leaderGroups)[index];
+                            const colors = Array.isArray(leader.extColor) ? 
+                                leader.extColor : 
+                                (typeof leader.extColor === 'string' ? leader.extColor.split(';') : []);
+    
+                            return {
+                                text: label,
+                                fillStyle: colors.length > 1 ? 
+                                    createLinearGradient(colorMap[colors[0]], colorMap[colors[1]], index, data.labels.length) : 
+                                    colorMap[colors[0]],
+                                strokeStyle: '#fff',
+                                lineWidth: 2,
+                                hidden: false,
+                                index: index
+                            };
+                        });
+                    }
                 }
             }
         }
@@ -88,9 +174,11 @@ const Home = ({ getImageUrl }) => {
 
 
     const filteredDecks = decks.filter(deck => {
-        const leaderMatch = !selectedLeader || deck.leader === selectedLeader;
+        const leaderMatch = !selectedLeader || 
+            (deck.leader && deck.leader.extNumber === selectedLeader);
         const colorMatch = selectedColors.length === 0 || 
-            (deck.colors && selectedColors.every(color => deck.colors.includes(color)));
+            selectedColors.some(color => deck.colors.includes(color));
+        
         return leaderMatch && colorMatch;
     });
 
@@ -115,7 +203,7 @@ const Home = ({ getImageUrl }) => {
                 setCards(cardsWithQuantities);
                 setUserCollection(cardsWithQuantities.filter(card => card.quantity > 0));
             } catch (error) {
-                console.log('Error loading user card data:', error);
+               // console.log('Error loading user card data:', error);
             }
         };
     
@@ -129,36 +217,48 @@ const Home = ({ getImageUrl }) => {
                 // First get all cards to have a reference for leader names
                 const cardsResponse = await fetch(`${API_URL}/api/cards`);
                 const cardsData = await cardsResponse.json();
+                setCards(cardsData);
+                //console.log('Cards Data:', cardsData[0]);
                 
                 // Create a map of productId to card name for quick lookup
                 const cardMap = cardsData.reduce((acc, card) => {
                     acc[card.productId] = {
                         name: card.name,
                         imageUrl: card.imageUrl,
-                        colors: card.extColor ? card.extColor.split(';') : []
+                        colors: Array.isArray(card.extColor) ? card.extColor : [],
+                        extNumber: card.extNumber,
+                        extColor: card.extColor 
                     };
                     return acc;
                 }, {});
-    
+                //console.log('Card Map Example:', cardMap[Object.keys(cardMap)[0]]);
+
                 // Fetch decks and map leader IDs to names
                 const decksQuery = query(collection(firestore, 'decks'));
                 const querySnapshot = await getDocs(decksQuery);
                 const deckData = querySnapshot.docs.map(doc => {
                     const data = doc.data();
                     const leaderCard = cardMap[data.leaderId];
+                    //console.log('Raw extColor:', leaderCard?.extColor);
                     return {
                         id: doc.id,
                         ...data,
-                        leader: leaderCard?.name || 'Unknown Leader',
-                        leaderImageUrl: leaderCard?.imageUrl,
-                        colors: leaderCard?.colors || []
+                        leader: {
+                            name: leaderCard?.name,
+                            imageUrl: leaderCard?.imageUrl,
+                            colors: leaderCard?.colors,
+                            extNumber: leaderCard?.extNumber,
+                            extColor: leaderCard?.extColor
+                        }
                     };
                 });
                 
                 setDecks(deckData);
                 
                 const distribution = deckData.reduce((acc, deck) => {
-                    acc[deck.leader] = (acc[deck.leader] || 0) + 1;
+                    if (deck.leader) {
+                        acc[deck.leader.extNumber] = (acc[deck.leader.extNumber] || 0) + 1;
+                    }
                     return acc;
                 }, {});
                 setLeaderDistribution(distribution);
@@ -169,11 +269,6 @@ const Home = ({ getImageUrl }) => {
     
         fetchDecks();
     }, []);
-
-
-    //const handleDeckClick = (deckId) => {
-    //    navigate(`/deck/${deckId}`);
-    //};
 
     return (
         <div className="home-container">
@@ -199,12 +294,15 @@ const Home = ({ getImageUrl }) => {
 
                 <div className="filters">
                     <select 
+                        className='showDecksSelectLeader'
                         value={selectedLeader}
                         onChange={(e) => setSelectedLeader(e.target.value)}
                     >
                         <option value="">All Leaders</option>
-                        {Object.keys(leaderDistribution).map(leader => (
-                            <option key={leader} value={leader}>{leader}</option>
+                        {Object.values(leaderGroups).map(leader => (
+                            <option key={leader.extNumber} value={leader.extNumber}>
+                                {leader.name} ({leader.count})
+                            </option>
                         ))}
                     </select>
                     
@@ -223,15 +321,15 @@ const Home = ({ getImageUrl }) => {
                 </div>
 
                 <div className="decks-grid">
-                {filteredDecks.map(deck => (
+                    {filteredDecks.map(deck => (
                         <div 
                             key={deck.id} 
                             className="deck-preview"
                             onClick={() => navigate(`/deck/${deck.id}`)}
                         >
-                            {deck.leaderImageUrl && (
+                            {deck.leader.imageUrl && (
                                 <img 
-                                    src={getImageUrl(deck.leaderImageUrl)}
+                                    src={getImageUrl(deck.leader.imageUrl)}
                                     alt="Deck Leader"
                                     className="deck-preview-image"
                                 />

@@ -78,7 +78,13 @@ const CardDetail = ({ card, onPrevious, onNext }) => {
                 <div className='cardInfo'>
 
                     {card.extColor && (
-                        <p><strong>Color:</strong> {card.extColor.replace(/;/g, ' | ')}</p>
+                        <p><strong>Color:</strong> {
+                            Array.isArray(card.extColor) ? 
+                                card.extColor.join(' | ') : 
+                                (typeof card.extColor === 'string' ? 
+                                    card.extColor.replace(/;/g, ' | ') : 
+                                    '')
+                        }</p>
                     )}         
 
                     {card.extAttribute && (

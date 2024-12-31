@@ -209,7 +209,7 @@ const updatePriceData = async (existingCards) => {
         newData.forEach(newCard => {
             // First verify we have a valid productId
             if (!newCard.productId) {
-                console.log(`Skipping entry without productId from ${filename}`);
+                //console.log(`Skipping entry without productId from ${filename}`);
                 return;
             }
 
@@ -220,7 +220,7 @@ const updatePriceData = async (existingCards) => {
             );
 
             if (existingCard) {
-                console.log(`Updating prices for productId: ${newCard.productId} from ${filename}`);
+                //console.log(`Updating prices for productId: ${newCard.productId} from ${filename}`);
                 existingCard.lowPrice = newCard.lowPrice;
                 existingCard.midPrice = newCard.midPrice;
                 existingCard.highPrice = newCard.highPrice;
@@ -251,7 +251,7 @@ app.get('/download-image', async (req, res) => {
             }
             return res.status(404).send('Image not found locally');
         } catch (error) {
-            console.log("Local file error:", error.message);
+            //console.log("Local file error:", error.message);
             return res.status(500).send('Error accessing local image.');
         }
     }
@@ -268,7 +268,7 @@ app.get('/download-image', async (req, res) => {
         }
         return res.status(404).send('Image not found');
     } catch (error) {
-        console.log("Error details:", error.message);
+       // console.log("Error details:", error.message);
         res.status(500).send('Error processing the image.');
     }
 });
@@ -297,6 +297,19 @@ app.get('/api/cards', async (req, res) => {
                 const filePath = path.join(folderPath, file);
                 const csvText = fs.readFileSync(filePath, 'utf-8');
                 const parsedData = Papa.parse(csvText, { header: true, skipEmptyLines: true }).data;
+
+                // Add debug logging here
+                parsedData.forEach(card => {
+                    if (card.extColor) {
+                        card.extColor = card.extColor.split(';').filter(Boolean);
+                        //console.log(`File: ${file}`);
+                        //console.log(`Card: ${card.name}`);
+                        //console.log(`Raw extColor: ${card.extColor}`);
+                    }
+                });
+
+
+
                 // Add source file tracking for each card
                 parsedData.forEach(card => {
                     card._source_file = file;
@@ -351,14 +364,14 @@ app.post('/api/update-prices', async (req, res) => {
 // Endpoint to download all images for cards
 app.post('/api/download-all-images', async (req, res) => {
     try {
-        console.log('Starting image download process...');
+        //console.log('Starting image download process...');
         
         const folderPath = path.join(__dirname, 'csv-files');
         const files = fs.readdirSync(folderPath).filter(file => 
             file.endsWith('.csv') && file !== 'OnePieceCardGameGroups.csv'
         );
 
-        console.log(`Found ${files.length} CSV files to process`);
+        //console.log(`Found ${files.length} CSV files to process`);
 
         // Create images directory if it doesn't exist
         const imagesDir = path.join(__dirname, 'public', 'images');
@@ -376,7 +389,7 @@ app.post('/api/download-all-images', async (req, res) => {
             allCards = allCards.concat(parsedData);
         }
 
-        console.log(`Processing ${allCards.length} cards`);
+        //console.log(`Processing ${allCards.length} cards`);
 
         let successful = 0;
         let skipped = 0;
@@ -397,7 +410,7 @@ app.post('/api/download-all-images', async (req, res) => {
                     continue;
                 }
 
-                console.log(`Downloading: ${imageUrl}`);
+                //console.log(`Downloading: ${imageUrl}`);
                 
                 const response = await axios({
                     method: 'GET',
@@ -408,7 +421,7 @@ app.post('/api/download-all-images', async (req, res) => {
 
                 await fs.writeFile(localPath, response.data);
                 successful++;
-                console.log(`Successfully downloaded: ${imageName}`);
+                //console.log(`Successfully downloaded: ${imageName}`);
             } catch (error) {
                 errors.push(`Failed to download ${imageUrl}: ${error.message}`);
             }

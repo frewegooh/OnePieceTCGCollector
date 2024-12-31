@@ -8,6 +8,7 @@ import Modal from './Modal';
 import FilterSidebar from './FilterSidebar';
 import API_URL from '../config';
 import LoginPrompt from './LoginPrompt';
+import { useLocation } from 'react-router-dom';
 
 const MyCollection = ({ getImageUrl }) => {
     const [showLoginPrompt, setShowLoginPrompt] = useState(false);
@@ -33,6 +34,16 @@ const MyCollection = ({ getImageUrl }) => {
     const [availableColors, setAvailableColors] = useState([]);
     const [showOwnedOnly, setShowOwnedOnly] = useState(false);
     const [selectedCostValues, setSelectedCostValues] = useState([]);
+    const location = useLocation();
+
+    useEffect(() => {
+        if (location.state?.selectedGroupID) {
+            setSelectedGroupID(location.state.selectedGroupID);
+        }
+        if (location.state?.initialOwnedOnly) {
+            setShowOwnedOnly(true);
+        }
+    }, [location]);
 
     // Keep all the existing useEffects and functions from App.js related to collection management
     useEffect(() => {
@@ -214,7 +225,12 @@ const updateQuantity = async (cardId, newQuantity) => {
 
         useEffect(() => {
             if (cards.length > 0) {
-                const uniqueColors = [...new Set(cards.flatMap((card) => card.extColor?.split(';') || []))];
+                const uniqueColors = [...new Set(cards.flatMap((card) => {
+                    if (Array.isArray(card.extColor)) {
+                        return card.extColor;
+                    }
+                    return typeof card.extColor === 'string' ? card.extColor.split(';') : [];
+                }))];
                 setAvailableColors(uniqueColors);
             }
         }, [cards]);
@@ -222,7 +238,10 @@ const updateQuantity = async (cardId, newQuantity) => {
 
         useEffect(() => {
             const filtered = cards.filter((card) => {    
-                const cardColors = card.extColor ? card.extColor.split(';') : [];
+                const cardColors = Array.isArray(card.extColor) ? 
+                    card.extColor : 
+                    (typeof card.extColor === 'string' ? card.extColor.split(';') : []);
+
                 const matchesColor = (() => {
                     if (multicolorOnly) {
                         const isMulticolor = cardColors.length > 1;

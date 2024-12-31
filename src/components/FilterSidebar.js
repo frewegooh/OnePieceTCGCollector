@@ -36,10 +36,12 @@ const FilterSidebar = ({
 
     useEffect(() => {
         if (cards?.length > 0) {
-    
             const filtered = cards.filter((card) => {
                 // Ensure defensive handling for undefined/null properties
-                const cardColors = card.extColor?.split(';') || [];
+                const cardColors = Array.isArray(card.extColor) ? 
+                    card.extColor : 
+                    (typeof card.extColor === 'string' ? card.extColor.split(';') : []);
+                    
                 const matchesColor = (() => {
                     if (multicolorOnly) {
                         const isMulticolor = cardColors.length > 1;

@@ -7,6 +7,8 @@ import './App.css';
 import API_URL from './config';
 import { useAuth } from './contexts/AuthContext';
 import { getImageUrl } from './config';
+import LoadingSpinner from './components/LoadingSpinner';
+import Footer from './components/Footer';
 
 const App = () => {
     const { currentUser } = useAuth();
@@ -21,13 +23,25 @@ const App = () => {
     const [cards, setCards] = useState([]);
     const [user, setUser] = useState(null);
     const [showOwnedOnly, setShowOwnedOnly] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const SetProgress = lazy(() => import('./components/SetProgress'));
+    const TermsOfService = lazy(() => import('./components/TermsOfService'));
+    const PrivacyPolicy = lazy(() => import('./components/PrivacyPolicy'));
+
 
      // Add the cards loading effect
-     useEffect(() => {
+    useEffect(() => {
         const fetchData = async () => {
-            const response = await fetch(`${API_URL}/api/cards`);
-            const allCards = await response.json();
-            setCards(allCards);
+            setIsLoading(true);
+            try {
+                const response = await fetch(`${API_URL}/api/cards`);
+                const allCards = await response.json();
+                setCards(allCards);
+            } catch (error) {
+                console.error('Error fetching cards:', error);
+            } finally {
+                setIsLoading(false);
+            }
         };
         fetchData();
     }, []);
@@ -64,88 +78,108 @@ const App = () => {
     return (
         <Router>
             <div className="App">
-                <div>
-                    <div className="navHolder">
-                        <header>
-                            <Link to="/" onClick={() => {
-                                if (window.location.pathname === '/') window.location.reload();
-                            }}>
-                                <img src="/Logo-Horz.png" alt="Logo" className="menuLogo" />
-                            </Link>
-                            <div className="hamburger" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-                                <span></span>
-                                <span></span>
-                                <span></span>
-                            </div>
-                            <nav className={isMenuOpen ? 'nav-active' : ''}>
-                                <Link to="/" onClick={() => setIsMenuOpen(false)}>Home</Link>
-                                <Link to="/my-collection" onClick={() => setIsMenuOpen(false)}>Card Tracker</Link>
-                                <div className="dropdown">
-                                    <span>Decks ⌄</span>
-                                    <div className="dropdown-content">
-                                        <Link to="/my-decks" onClick={() => setIsMenuOpen(false)}>My Decks</Link>
-                                        <Link to="/deck-builder" onClick={() => setIsMenuOpen(false)}>Deck Builder</Link>
-                                    </div>
-                                </div>
-                                {currentUser ? (
-                                    <Link 
-                                        className="logoutButton" 
-                                        onClick={() => {
-                                            auth.signOut();
-                                            setIsMenuOpen(false);
-                                            window.location.reload();
-                                        }}
-                                    >
-                                        Log Out
+                {isLoading ? (
+                    <LoadingSpinner />
+                ) : (
+                        <div>
+                            <div className="navHolder">
+                                <header>
+                                    <Link to="/" onClick={() => {
+                                        if (window.location.pathname === '/') window.location.reload();
+                                    }}>
+                                        <img src="/Logo-Horz.png" alt="Logo" className="menuLogo" />
                                     </Link>
+                                    <div className="hamburger" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+                                        <span></span>
+                                        <span></span>
+                                        <span></span>
+                                    </div>
+                                    <nav className={isMenuOpen ? 'nav-active' : ''}>
+                                        <Link to="/" onClick={() => setIsMenuOpen(false)}>Home</Link>
+                                        <div className="dropdown">
+                                            <span>Card Collection ⌄</span>
+                                            <div className="dropdown-content">
+                                                <Link to="/my-collection" onClick={() => setIsMenuOpen(false)}>My Collection</Link>
+                                                <Link to="/sets" onClick={() => setIsMenuOpen(false)}>Set Progress</Link>
+                                            </div>
+                                        </div>
+
+                                        <div className="dropdown">
+                                            <span>Decks ⌄</span>
+                                            <div className="dropdown-content">
+                                                <Link to="/my-decks" onClick={() => setIsMenuOpen(false)}>My Decks</Link>
+                                                <Link to="/deck-builder" onClick={() => setIsMenuOpen(false)}>Deck Builder</Link>
+                                            </div>
+                                        </div>
+                                        {currentUser ? (
+                                            <Link 
+                                                className="logoutButton" 
+                                                onClick={() => {
+                                                    auth.signOut();
+                                                    setIsMenuOpen(false);
+                                                    window.location.reload();
+                                                }}
+                                            >
+                                                Log Out
+                                            </Link>
+                                        ) : (
+                                            <Link to="/login" onClick={() => setIsMenuOpen(false)}>Login</Link>
+                                        )}
+                                        {currentUser && currentUser.uid === ADMIN_USER_ID && (
+                                            <button onClick={handleDownloadImages} style={{ marginTop: '20px' }}>
+                                                Download Images
+                                            </button>
+                                        )}
+                                    </nav>
+                                </header>
+                            </div>
+                            <section className="secBody">
+                                {isLoading ? (
+                                    <LoadingSpinner />
                                 ) : (
-                                    <Link to="/login" onClick={() => setIsMenuOpen(false)}>Login</Link>
+                                    <Suspense fallback={<LoadingSpinner />}>
+                                        <Routes>
+                                        <Route path="/" element={<Home getImageUrl={getImageUrl} />} />
+                                        <Route path="/my-collection" element={<MyCollection getImageUrl={getImageUrl} />} />
+                                        <Route path="/sets" element={<SetProgress cards={cards} user={currentUser} />} />
+                                        <Route path="/collection" element={<MyCollection getImageUrl={getImageUrl} />} />
+                                        <Route path="/deck-builder" element={
+                                            cards.length > 0 ? (
+                                                <DeckBuilder 
+                                                    cards={cards} 
+                                                    user={user}
+                                                    showOwnedOnly={showOwnedOnly}
+                                                    onOwnedOnlyChange={() => setShowOwnedOnly(!showOwnedOnly)}
+                                                    getImageUrl={getImageUrl}
+                                                />
+                                            ) : (
+                                                <div>Loading...</div>
+                                            )
+                                        } />
+                                            <Route path="/my-decks" element={<DeckLibrary user={currentUser} getImageUrl={getImageUrl} />} />
+                                            <Route path="/deck/:deckId" element={<DeckView getImageUrl={getImageUrl} />} />
+                                            <Route path="/deck/edit/:deckId" element={
+                                                cards.length > 0 ? (
+                                                    <DeckEditor 
+                                                        cards={cards} 
+                                                        user={currentUser}
+                                                        getImageUrl={getImageUrl}
+                                                    />
+                                                ) : (
+                                                    <div>Loading...</div>
+                                                )
+                                            } />
+                                            <Route path="/login" element={<Login />} />
+                                            <Route path="/register" element={<Register />} />
+                                            <Route path="/terms" element={<TermsOfService />} />
+                                            <Route path="/privacy" element={<PrivacyPolicy />} />
+                                        </Routes>
+                                    </Suspense>
                                 )}
-                                {currentUser && currentUser.uid === ADMIN_USER_ID && (
-                                    <button onClick={handleDownloadImages} style={{ marginTop: '20px' }}>
-                                        Download Images
-                                    </button>
-                                )}
-                            </nav>
-                        </header>
-                    </div>
-                    <section className="secBody">
-                        <Suspense fallback={<div>Loading...</div>}>
-                            <Routes>
-                            <Route path="/" element={<Home getImageUrl={getImageUrl} />} />
-                            <Route path="/my-collection" element={<MyCollection getImageUrl={getImageUrl} />} />
-                            <Route path="/deck-builder" element={
-                                cards.length > 0 ? (
-                                    <DeckBuilder 
-                                        cards={cards} 
-                                        user={user}
-                                        showOwnedOnly={showOwnedOnly}
-                                        onOwnedOnlyChange={() => setShowOwnedOnly(!showOwnedOnly)}
-                                        getImageUrl={getImageUrl}
-                                    />
-                                ) : (
-                                    <div>Loading...</div>
-                                )
-                            } />
-                                <Route path="/my-decks" element={<DeckLibrary user={currentUser} getImageUrl={getImageUrl} />} />
-                                <Route path="/deck/:deckId" element={<DeckView getImageUrl={getImageUrl} />} />
-                                <Route path="/deck/edit/:deckId" element={
-                                    cards.length > 0 ? (
-                                        <DeckEditor 
-                                            cards={cards} 
-                                            user={currentUser}
-                                            getImageUrl={getImageUrl}
-                                        />
-                                    ) : (
-                                        <div>Loading...</div>
-                                    )
-                                } />
-                                <Route path="/login" element={<Login />} />
-                                <Route path="/register" element={<Register />} />
-                            </Routes>
-                        </Suspense>
-                    </section>
-                </div>
+                            </section>
+                        </div>
+                )}
+                <Footer />
             </div>
         </Router>
     );

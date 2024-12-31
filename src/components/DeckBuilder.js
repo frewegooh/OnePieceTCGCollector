@@ -111,14 +111,18 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
     // Update the useEffect that handles leader changes
     useEffect(() => {
         if (leader && Array.isArray(cards)) {
-            const leaderColors = leader.extColor ? leader.extColor.split(';') : [];
-            const filtered = cards.filter((card) => {
-                if (!card) return false;
-                const validType = ['Character', 'Stage', 'Event'].includes(card.extCardType);
-                const cardColors = card.extColor ? card.extColor.split(';') : [];
-                const matchesColor = cardColors.some(color => leaderColors.includes(color));
-                return validType && matchesColor;
-            });
+            const leaderColors = Array.isArray(leader.extColor) ? 
+                leader.extColor : 
+                (typeof leader.extColor === 'string' ? leader.extColor.split(';') : []);
+                const filtered = cards.filter((card) => {
+                    if (!card) return false;
+                    const validType = ['Character', 'Stage', 'Event'].includes(card.extCardType);
+                    const cardColors = Array.isArray(card.extColor) ? 
+                        card.extColor : 
+                        (typeof card.extColor === 'string' ? card.extColor.split(';') : []);
+                    const matchesColor = cardColors.some(color => leaderColors.includes(color));
+                    return validType && matchesColor;
+                });
             setFilteredCards(filtered);
         } else if (Array.isArray(cards)) {
             setFilteredCards(cards);
@@ -230,7 +234,12 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
     useEffect(() => {
         if (cards && cards.length > 0) {
             // Extract unique color values
-            const uniqueColors = [...new Set(cards.flatMap((card) => card.extColor?.split(';') || []))];
+            const uniqueColors = [...new Set(cards.flatMap((card) => {
+                if (Array.isArray(card.extColor)) {
+                    return card.extColor;
+                }
+                return typeof card.extColor === 'string' ? card.extColor.split(';') : [];
+            }))];
             setAvailableColors(uniqueColors);
             // Extract unique cost values
             const uniqueCosts = [...new Set(cards.map(card => parseInt(card.extCost, 10)).filter(cost => !isNaN(cost)))];
@@ -278,7 +287,10 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
         const filtered = cards.filter((card) => {
             if (!card) return false;
 
-            const cardColors = card.extColor ? card.extColor.split(';') : [];
+            const cardColors = Array.isArray(card.extColor) ? 
+                card.extColor : 
+                (typeof card.extColor === 'string' ? card.extColor.split(';') : []);
+
             const matchesColor = (() => {
                 if (multicolorOnly) {
                     const isMulticolor = cardColors.length > 1;
