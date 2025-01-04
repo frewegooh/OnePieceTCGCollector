@@ -26,7 +26,7 @@ const styles = {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        zIndex: 1000,
+        zIndex: 100011,
         overflow: 'auto',
     },
     modal: {

@@ -8,7 +8,9 @@ const storage = new Storage();
 const bucketName = 'card-tracker-images';
 let cardCache = null;
 let lastCacheTime = null;
+const compression = require('compression');
 const CACHE_DURATION = 1000 * 60 * 60 * 24; // 24 hours
+
 
 
 const app = express();
@@ -18,6 +20,7 @@ const PORT = process.env.PORT || 5000;
 const cors = require('cors');
 app.use(cors()); // Enable CORS for all routes
 app.use(express.json()); 
+app.use(compression());
 
 // Add your CSV URLs here
 const csvMapping  = {

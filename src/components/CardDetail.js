@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 //import { formatCardText } from '../utils/textUtils';
 import DOMPurify from 'dompurify';
 import { getImageUrl } from '../config';
+import { useNavigate } from 'react-router-dom';
+
 
 export const formatCardTextWithHTML = (text) => {
     const formattedText = text.replace(/\[(.*?)\]/g, (_, match) => {
@@ -17,6 +19,8 @@ export const formatCardTextWithHTML = (text) => {
 const CardDetail = ({ card, onPrevious, onNext }) => {
     const [showInfo, setShowInfo] = useState(false);
     const [imageUrl, setImageUrl] = useState(null);
+    const [showShareMessage, setShowShareMessage] = useState(false);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const loadImage = async () => {
@@ -32,6 +36,16 @@ const CardDetail = ({ card, onPrevious, onNext }) => {
 
     return (
         <div className="cardDetailPopup">
+            <i 
+                className="fas fa-share-alt share-icon"
+                onClick={() => {
+                    const shareUrl = `${window.location.origin}/card/${card.productId}`;
+                    navigator.clipboard.writeText(shareUrl);
+                    setShowShareMessage(true);
+                    setTimeout(() => setShowShareMessage(false), 2000);
+                }}
+                title="Share Card"
+            />
             <div className="navigation">
                 {onPrevious && (
                     <button onClick={onPrevious} className="navArrow leftArrow">
@@ -46,10 +60,12 @@ const CardDetail = ({ card, onPrevious, onNext }) => {
             </div>
 
 
-        <div style={{ padding: '1rem' }} className='cardInfoPop'>
-            <div className='imgHolder'>
-            <p className='cardDetailTitle'>{card.name}</p>   
-            {imageUrl && <img src={imageUrl} alt={card.cleanName} />}
+            <div style={{ padding: '1rem' }} className='cardInfoPop'>
+                <p className='cardDetailTitle'>{card.name}</p>   
+                <div className='imgHolder'>
+                
+
+                {imageUrl && <img src={imageUrl} alt={card.cleanName} />}
                 {/* Go To Product button */}
                 <div className='tcgPlayerBttn'>
                     {card.url && (
@@ -129,15 +145,44 @@ const CardDetail = ({ card, onPrevious, onNext }) => {
                             />
                         </p>
                     )}
-
                 </div>
                 )}
                 <button 
                     onClick={() => setShowInfo(!showInfo)}
                     className="toggle-info-button"
                 >
-                    {showInfo ? 'Hide Details' : 'Show Details'}
+                    {showInfo ? 'Hide Info' : 'Quick Info'}
                 </button>
+
+                <button 
+                        onClick={() => navigate(`/card/${card.productId}`)}
+                        className="view-full-page-button"
+                    >
+                        All Card Info
+                </button>
+
+
+                {showShareMessage && (
+                    <div className="share-message">
+                        Link Copied
+                        <style>
+                        {`
+                            .share-message {
+                                position: fixed;
+                                top: 50%;
+                                left: 50%;
+                                transform: translate(-50%, -50%);
+                                background-color: rgba(0, 0, 0, 0.8);
+                                color: white;
+                                padding: 20px;
+                                border-radius: 5px;
+                                z-index: 1000;
+                            }
+                        `}
+                        </style>
+                    </div>
+                )}
+
         </div>
         </div>
     );

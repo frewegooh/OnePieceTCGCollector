@@ -113,20 +113,9 @@ const DeckAnalytics = ({ deck, leader }) => {
 
     return (
         <div className={`deck-analytics ${isOpen ? 'open' : ''}`}>
-            <div className="toggle-tab" onClick={() => setIsOpen(!isOpen)}>
-                {isOpen ? '>' : '<'}
-            </div>
             <div className="analytics-content">
-                <div className='typeDistribution'>
-                    <h3>Card Type Distribution</h3>
-                    <div className="distribution-section">
-                        {Object.entries(typeDistribution).map(([type, count]) => (
-                            <div key={type} className="distribution-row">
-                                <span className='title'>{type}: </span>
-                                <span>{count}</span>
-                            </div>
-                        ))}
-                    </div>
+                <div className='AnalyticsTitle'>
+                    <h2>Deck Stats</h2>
                 </div>
 
                 <div className='costDistribution'>
@@ -151,6 +140,18 @@ const DeckAnalytics = ({ deck, leader }) => {
                     </BarChart>
                 </div>
                 
+                <div className='typeDistribution'>
+                    <h3>Card Type Distribution</h3>
+                    <div className="distribution-section">
+                        {Object.entries(typeDistribution).map(([type, count]) => (
+                            <div key={type} className="distribution-row">
+                                <span className='title'>{type}: </span>
+                                <span>{count}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
                 <div className='counterDistribution'>
                     <h3>Counter Distribution</h3>
                     <div className="distribution-section">
@@ -204,44 +205,17 @@ const DeckAnalytics = ({ deck, leader }) => {
 
             <style>{`
                 .deck-analytics {
-                    position: fixed;
-                    right: -350px;
-                    top: 50%;
-                    transform: translateY(-50%);
-                    width: 350px;
+                    width: 100%;
                     background: white;
-                    border: 1px solid #ccc;
-                    border-radius: 8px 0 0 8px;
-                    transition: right 0.3s ease;
-                    box-shadow: -2px 0 5px rgba(0,0,0,0.1);
-                    z-index: 1000;
+                    margin-top: 20px;
                 }
 
                 .deck-analytics.open {
                     right: 0;
                 }
 
-                .toggle-tab {
-                    position: absolute;
-                    left: -30px;
-                    top: 50%;
-                    transform: translateY(-50%);
-                    width: 30px;
-                    height: 60px;
-                    background: white;
-                    border: 1px solid #ccc;
-                    border-right: none;
-                    border-radius: 8px 0 0 8px;
-                    cursor: pointer;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                }
-
                 .analytics-content {
                     padding: 20px;
-                    overflow-y: auto;
-                    max-height: 80vh;
                 }
 
                 .distribution-section {

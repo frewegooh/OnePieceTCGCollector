@@ -570,7 +570,6 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
                 right: 0, 
                 bottom: 0, 
                 background: 'white', 
-                zIndex: 10,
                 display: 'flex',
                 flexDirection: 'column'
             }}>

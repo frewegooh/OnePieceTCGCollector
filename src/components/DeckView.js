@@ -25,9 +25,52 @@ const DeckView = ({ getImageUrl }) => {
     const [selectedCard, setSelectedCard] = useState(null);
     const [showExportMessage, setShowExportMessage] = useState(false);
 
-    const handleViewDetails = (card) => {
-        setSelectedCard(card);
+    const handleViewDetails = (card, source) => {
+        let cardIndex;
+        if (source === 'leader') {
+            cardIndex = 0;
+        } else {
+            cardIndex = deck.cards.findIndex(c => c.productId === card.productId);
+        }
+        
+        setSelectedCard({ 
+            ...card, 
+            index: cardIndex, 
+            source: source,
+            displayedArray: deck.cards 
+        });
         setIsModalOpen(true);
+    };
+
+    //Deck Navigation
+    const handlePreviousCard = () => {
+        if (!selectedCard) return;
+        
+        const cardArray = selectedCard.displayedArray;
+        if (selectedCard.index > 0) {
+            const previousCard = cardArray[selectedCard.index - 1];
+            setSelectedCard({ 
+                ...previousCard, 
+                index: selectedCard.index - 1,
+                source: selectedCard.source,
+                displayedArray: selectedCard.displayedArray
+            });
+        }
+    };
+    
+    const handleNextCard = () => {
+        if (!selectedCard) return;
+        
+        const cardArray = selectedCard.displayedArray;
+        if (selectedCard.index < cardArray.length - 1) {
+            const nextCard = cardArray[selectedCard.index + 1];
+            setSelectedCard({ 
+                ...nextCard, 
+                index: selectedCard.index + 1,
+                source: selectedCard.source,
+                displayedArray: selectedCard.displayedArray
+            });
+        }
     };
 
     // Fetch card data from server
@@ -151,30 +194,37 @@ const DeckView = ({ getImageUrl }) => {
                             <img 
                                 src={getImageUrl(deck.leader.imageUrl)}
                                 alt={deck.leader.name}
-                                className="card-image"
+                                className="card-image leader-card-image"
                             />
+
+                            <button 
+                                className="viewBttn" 
+                                onClick={() => handleViewDetails(deck.leader)}
+                            >
+                                View Details
+                            </button>
                     </div>
 
-                        <div className="deckCards">
+                    <div className="deckCards">
+                        
+                        {deck.cards.map((card, index) => (
+                            <div key={index} className="card-container">
+                                <div className="card-quantity">{card.quantity}</div>
+                                <img 
+                                    src={getImageUrl(card.imageUrl)}
+                                    alt={card.name}
+                                    className="card-image"
+                                />
+                                <button 
+                                    className="viewBttn" 
+                                    onClick={() => handleViewDetails(card)}
+                                >
+                                    View Details
+                                </button>
+                            </div>
                             
-                            {deck.cards.map((card, index) => (
-                                <div key={index} className="card-container">
-                                    <div className="card-quantity">{card.quantity}</div>
-                                    <img 
-                                        src={getImageUrl(card.imageUrl)}
-                                        alt={card.name}
-                                        className="card-image"
-                                    />
-                                    <button 
-                                        className="viewBttn" 
-                                        onClick={() => handleViewDetails(card)}
-                                    >
-                                        View Details
-                                    </button>
-                                </div>
-                                
-                            ))}
-                        </div>
+                        ))}
+                    </div>
                 </div>
 
             {showShareModal && (
@@ -187,7 +237,8 @@ const DeckView = ({ getImageUrl }) => {
             {showExportMessage && (
                 <div className="export-message">
                     Deck Copied
-                    <style jsx>{`
+                    <style>
+                    {`
                         .export-message {
                             position: fixed;
                             top: 50%;
@@ -199,47 +250,65 @@ const DeckView = ({ getImageUrl }) => {
                             border-radius: 5px;
                             z-index: 1000;
                         }
-                    `}</style>
+                    `}
+                </style>
                 </div>
             )}
 
-            <style jsx>{`
-                .card-container {
-                    position: relative;
-                    display: inline-block;
-                    margin: 10px;
-                }
-                .card-quantity {
-                    background-color: rgba(0, 0, 0, 0.7);
-                    color: white;
-                    padding: 2px 6px;
-                    border-radius: 500px 500px 0px 0px;
-                    font-weight: bold;
-                    z-index: 1;
-                    width: fit-content;
-                    margin-left:auto;
-                    margin-right:0;
-                }
-                .card-image {
-                    max-width: 200px;
-                    height: auto;
-                }
-                .cards-grid {
-                    display: grid;
-                    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-                    gap: 20px;
-                }
-            `}</style>
+            <style>
+                {`
+                    .card-container {
+                        position: relative;
+                        display: inline-block;
+                        margin: 10px;
+                    }
+                    .card-quantity {
+                        background-color: rgba(0, 0, 0, 0.7);
+                        color: white;
+                        padding: 2px 6px;
+                        border-radius: 500px 500px 0px 0px;
+                        font-weight: bold;
+                        z-index: 1;
+                        width: fit-content;
+                        margin-left:auto;
+                        margin-right:0;
+                    }
+                    .card-image {
+                        max-width: 200px;
+                        height: auto;
+                    }
+                    .cards-grid {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                        gap: 20px;
+                    }
+                `}
+            </style>
 
             <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
                 {selectedCard && (
                     <CardDetail 
                         card={selectedCard}
+                        onPrevious={selectedCard.source !== 'leader' ? handlePreviousCard : undefined}
+                        onNext={selectedCard.source !== 'leader' ? handleNextCard : undefined}
                     />
                 )}
             </Modal>
 
-            <DeckAnalytics deck={deck.cards} leader={deck.leader} />
+            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+                {selectedCard && (
+                    <CardDetail 
+                        card={selectedCard}
+                        onPrevious={selectedCard.source !== 'leader' ? handlePreviousCard : undefined}
+                        onNext={selectedCard.source !== 'leader' ? handleNextCard : undefined}
+                    />
+                )}
+            </Modal>
+
+            {/* Add the analytics here */}
+            <div className="deck-analytics-section">
+                <DeckAnalytics deck={deck.cards} leader={deck.leader} />
+            </div>
         </div>    
 
 

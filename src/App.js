@@ -9,6 +9,7 @@ import { useAuth } from './contexts/AuthContext';
 import { getImageUrl } from './config';
 import LoadingSpinner from './components/LoadingSpinner';
 import Footer from './components/Footer';
+import CardDetailPage from './components/CardDetailPage';
 
 const App = () => {
     const { currentUser } = useAuth();
@@ -81,13 +82,13 @@ const App = () => {
                 {isLoading ? (
                     <LoadingSpinner />
                 ) : (
-                        <div>
+                        <div className='bodyContentHolder'>
                             <div className="navHolder">
                                 <header>
                                     <Link to="/" onClick={() => {
                                         if (window.location.pathname === '/') window.location.reload();
                                     }}>
-                                        <img src="/Logo-Horz.png" alt="Logo" className="menuLogo" />
+                                        <img src="/Logo-Horz.webp" alt="Logo" className="menuLogo" />
                                     </Link>
                                     <div className="hamburger" onClick={() => setIsMenuOpen(!isMenuOpen)}>
                                         <span></span>
@@ -97,7 +98,7 @@ const App = () => {
                                     <nav className={isMenuOpen ? 'nav-active' : ''}>
                                         <Link to="/" onClick={() => setIsMenuOpen(false)}>Home</Link>
                                         <div className="dropdown">
-                                            <span>Card Collection ⌄</span>
+                                            <span className='dropDownTitle'>Card Collection <i class="fa-solid fa-angle-down"></i></span>
                                             <div className="dropdown-content">
                                                 <Link to="/my-collection" onClick={() => setIsMenuOpen(false)}>My Collection</Link>
                                                 <Link to="/sets" onClick={() => setIsMenuOpen(false)}>Set Progress</Link>
@@ -105,7 +106,7 @@ const App = () => {
                                         </div>
 
                                         <div className="dropdown">
-                                            <span>Decks ⌄</span>
+                                        <span className='dropDownTitle'>Decks <i className="fa-solid fa-angle-down"></i></span>
                                             <div className="dropdown-content">
                                                 <Link to="/my-decks" onClick={() => setIsMenuOpen(false)}>My Decks</Link>
                                                 <Link to="/deck-builder" onClick={() => setIsMenuOpen(false)}>Deck Builder</Link>
@@ -173,6 +174,7 @@ const App = () => {
                                             <Route path="/register" element={<Register />} />
                                             <Route path="/terms" element={<TermsOfService />} />
                                             <Route path="/privacy" element={<PrivacyPolicy />} />
+                                            <Route path="/card/:cardId" element={<CardDetailPage getImageUrl={getImageUrl} />} />
                                         </Routes>
                                     </Suspense>
                                 )}

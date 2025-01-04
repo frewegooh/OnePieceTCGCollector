@@ -3,12 +3,26 @@
   text-align: left;
   width: 100%;
   max-width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.App > .bodyContentHolder {
+  min-height:calc(100vh - 150px);
+}
+.App footer {
+  margin-top:auto;
 }
 
 /*#root, .App > div {
   width: 100%;
   max-width: 100%;
 }*/
+
+.navHolder {
+  z-index: 11111;
+  position: relative;
+}
+
 
 .App > div > section {
   display:flex;
@@ -263,7 +277,7 @@ nav .dropdown-content {
 
 /* Basic Button */
 button {
-  background-color: rgba(0, 0, 0, 0) !important;
+  background-color: #fff !important;
   color:#000 !important;
   font-size: 18px !important;
   margin-top: 10px !important;
@@ -537,15 +551,19 @@ input[type=text]:focus {
 
 .deck-view {
   padding: 20px;
+  padding-top:0px;
 }
 .deck-view .card-quantity {
   margin-top:0px !important;
+}
+.deck-view .deck-cards-container .leaderSection {
+  max-width:200px;
+  text-align: center;
 }
 .deck-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
 }
 
 .menu-icon {
@@ -555,10 +573,6 @@ input[type=text]:focus {
 .deck-preview {
   cursor: pointer;
   transition: transform 0.2s;
-}
-
-.deck-preview:hover {
-  transform: scale(1.05);
 }
 
 .deck-preview-image {
@@ -614,7 +628,9 @@ input[type=text]:focus {
 
 .deckBuilderContainer {
   z-index: 1111;
+  background-color: #fff;
 }
+
 
 
 /* Deck Library */
@@ -684,10 +700,21 @@ input[type=text]:focus {
       left: 50%;
       transform: translateX(-50%);
       z-index: 111;
+      -webkit-box-shadow: 0px 5px 7px 0px rgba(0,0,0,0.34);
+      -moz-box-shadow: 0px 5px 7px 0px rgba(0,0,0,0.34);
+      box-shadow: 0px 5px 7px 0px rgba(0,0,0,0.34);
   }
-
-  nav a {
+  nav .dropdown-content {
+    padding-top:0px;
+    padding-bottom:0px;
+    background-color: unset;
+  }
+  .dropdown-content a {
+    padding: 5px 20px !important;
+  }
+  nav a, nav .dropDownTitle {
       margin: 10px 0;
+      display: inline-block;
   }
   header {
     justify-content: space-between;
@@ -836,12 +863,10 @@ input[type=text]:focus {
   margin-right:auto;
   min-height: unset !important;
   max-height:80vh;
+  background-color: #fff;
 }
 .builderCardPickerHolder .rightCardPanel.cardListCSS {
   max-height:unset;
-}
-.builderCardPickerHolder {
-
 }
 
 .image-placeholder {
@@ -857,25 +882,35 @@ input[type=text]:focus {
   100% { opacity: 0.6; }
 }
 
-
 /* Card Building Sidebar */
-.deck-analytics .analytics-content h3 {
-  margin-bottom:0px !important;
-}
 .deck-analytics .analytics-content .title{
   font-weight: 600;
 }
 .deck-analytics .analytics-content .distribution-section {
   display: flex;
   flex-direction: row;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-start;
+  justify-content: flex-start;
   flex-wrap: wrap;
 }
 .deck-analytics .analytics-content .distribution-section .distribution-row {
   padding: 3px 5px;
   margin: 5px;
   border: 2px solid black;
+}
+
+.analytics-content {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+.analytics-content .AnalyticsTitle {
+  width:100%;
+}
+.analytics-content > div {
+  margin-left:15px;
+  margin-right:15px;
 }
 
 /* Lazy Image Load 
@@ -1152,6 +1187,14 @@ input[type=text]:focus {
 .set-progress-container h3 {
   margin-top:0px;
 }
+@media (max-width:767px) {
+  .set-progress-container .set-item {
+    width:100%;
+    margin-left:0px;
+    margin-right:0px;
+  }
+}
+
 
 /* Footer */
 .app-footer {
@@ -1202,4 +1245,106 @@ input[type=text]:focus {
 /* Add padding to prevent content from being hidden behind footer */
 .secBody {
   padding-bottom: 60px;
+}
+
+
+.MuiSvgIcon-root {
+  -webkit-box-shadow: 0px 1px 5px 0px rgba(0,0,0,0.4);
+  -moz-box-shadow: 0px 1px 5px 0px rgba(0,0,0,0.4);
+  box-shadow: 0px 1px 5px 0px rgba(0,0,0,0.4);
+  border-radius: 100px;
+  padding: 5px;
+  color: white;
+  background: black;
+}
+
+.share-icon {
+  cursor: pointer;
+  font-size: 1.5rem;
+  color: #4a4a4a;
+  padding: 8px;
+}
+
+.share-icon:hover {
+  color: #2196F3;
+}
+.cardDetailPopup .share-icon {
+  position: absolute;
+  top: -15px;
+  left: -15px;
+}
+.cardDetailPopup .cardInfo .view-full-page-button {
+  width:100%;
+  text-align: center;
+}
+
+/* Card Detail Page */
+.card-detail-page .cardInfoPop {
+  width:100%;
+  max-width:100%;
+  display: flex  ;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.card-detail-page .cardInfoPop .cardDetailTitle {
+  text-align: left;
+  width:100%;
+}
+.card-detail-page .imgHolder {
+  margin-right: 25px;
+  max-width: calc(30% - 25px);
+}
+.card-detail-page .cardInfo {
+  width: calc(70% - 30px);
+  max-width: 500px;
+}
+
+.card-detail-page .related-content {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+.card-detail-page .related-content .decks-section {
+  width: calc(50% - 10px);
+  margin-right: 20px;
+}
+.card-detail-page .related-content .related-cards-section {
+  width: calc(50% - 10px);
+}
+.card-detail-page .related-content .related-cards-section .cards-grid {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.card-detail-page .related-content .related-cards-section .card-preview {
+  max-width:47%;
+  margin-bottom:20px;
+}
+.card-detail-page .related-content .related-cards-section .card-preview img {
+  width:auto;
+  max-width:100%;
+}
+.card-detail-page .cardInfo p {
+  margin-bottom:15px;
+}
+@media (max-width:767px) {
+  .card-detail-page .cardInfoPop, .card-detail-page .related-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .card-detail-page .imgHolder {
+    margin-right:0px;
+    max-width:400px;
+  }
+  .card-detail-page .cardInfo {
+    max-width:100%;
+    text-align: left;
+  }
+  .card-detail-page .related-content .decks-section, .card-detail-page .related-content .related-cards-section {
+    width:100%;
+    margin-right:0px;
+  }
 }
