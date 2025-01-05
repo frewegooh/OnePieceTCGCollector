@@ -12,7 +12,7 @@ import { MessageModal } from './ShareModal';
 import DeckAnalytics from './DeckAnalytics';
 import ImportDeckModal from './ImportDeckModal';
 
-const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl }) => {
+const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl, userQuantities }) => {
     const { currentUser } = useAuth();
     // Move ALL useState declarations here, before any conditional checks
     const [showLoginPrompt, setShowLoginPrompt] = useState(false);
@@ -43,7 +43,6 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
     const [showDeckBuilder, setShowDeckBuilder] = useState(false);
     //const leaderCards = cards?.filter((card) => card.extCardType === 'Leader') || [];
     const [showImportModal, setShowImportModal] = useState(false);
-
 
     const handleImportDeck = (matchedCards) => {
         if (matchedCards.length > 0) {
@@ -335,7 +334,7 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
                 selectedAttributes.length === 0 ||
                 selectedAttributes.includes(card.extAttribute);
 
-            const matchesOwned = !showOwnedOnly || card.quantity > 0;        
+            const matchesOwned = !showOwnedOnly || (userQuantities && userQuantities[card.productId] > 0);         
 
             return (
                 matchesColor &&
@@ -363,7 +362,8 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
         selectedAttributes,
         selectedCounterValues,
         showOwnedOnly,
-        showLeaderPicker
+        showLeaderPicker,
+        userQuantities
     ]);
 
 
@@ -559,7 +559,14 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl 
                 )}
             </div>
 
-            <DeckAnalytics deck={deck} leader={leader} />
+            <DeckAnalytics 
+                deck={deck} 
+                leader={leader} 
+                userCollection={userQuantities}
+                getImageUrl={getImageUrl}
+                handleViewDetails={handleViewDetails}
+                cards={cards}
+            />
         </div>
         
         {showDeckBuilder && (

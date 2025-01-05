@@ -11,8 +11,6 @@ let lastCacheTime = null;
 const compression = require('compression');
 const CACHE_DURATION = 1000 * 60 * 60 * 24; // 24 hours
 
-
-
 const app = express();
 //const PORT = 5000;
 const PORT = process.env.PORT || 5000;
@@ -131,6 +129,13 @@ const setCodeToGroupId = {
     'COL': '23304',    // Collection Sets
     'AN25': '23834'    // Anime 25th Collection
 };
+
+const invalidateCache = () => {
+    cardCache = null;
+    lastCacheTime = null;
+};
+
+
 
 // Add new endpoint for deck imports
 app.post('/api/deck-import', async (req, res) => {
@@ -352,6 +357,7 @@ app.get('/api/cards', async (req, res) => {
 // New endpoint to force price updates
 app.post('/api/update-prices', async (req, res) => {
     try {
+        invalidateCache();
         if (cardCache) {
             cardCache = await updatePriceData(cardCache);
             lastCacheTime = Date.now();

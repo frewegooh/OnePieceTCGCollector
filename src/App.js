@@ -1,6 +1,6 @@
 import React, { Suspense, lazy, useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import { auth } from './firebase';
+import { auth,firestore } from './firebase';
 import Login from './components/Login';
 import Register from './components/Register';
 import './App.css';
@@ -10,6 +10,7 @@ import { getImageUrl } from './config';
 import LoadingSpinner from './components/LoadingSpinner';
 import Footer from './components/Footer';
 import CardDetailPage from './components/CardDetailPage';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 const App = () => {
     const { currentUser } = useAuth();
@@ -28,6 +29,22 @@ const App = () => {
     const SetProgress = lazy(() => import('./components/SetProgress'));
     const TermsOfService = lazy(() => import('./components/TermsOfService'));
     const PrivacyPolicy = lazy(() => import('./components/PrivacyPolicy'));
+
+
+    const [userQuantities, setUserQuantities] = useState({});
+
+    useEffect(() => {
+        const fetchUserQuantities = async () => {
+            if (currentUser) {
+                const docRef = doc(firestore, 'users', currentUser.uid);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    setUserQuantities(docSnap.data().cardQuantities || {});
+                }
+            }
+        };
+        fetchUserQuantities();
+    }, [currentUser]);
 
 
      // Add the cards loading effect
@@ -76,6 +93,32 @@ const App = () => {
         }
     };
 
+    const updateQuantity = async (cardId, newQuantity) => {
+        if (!currentUser) return;
+    
+        // Batch updates in a transaction
+        const docRef = doc(firestore, 'users', currentUser.uid);
+        const updatedQuantities = { ...userQuantities };
+        
+        if (newQuantity > 0) {
+            updatedQuantities[cardId] = newQuantity;
+        } else {
+            delete updatedQuantities[cardId];
+        }
+    
+        // Update local state first for immediate UI response
+        setUserQuantities(updatedQuantities);
+        
+        try {
+            // Update Firestore in the background
+            await setDoc(docRef, { cardQuantities: updatedQuantities }, { merge: true });
+        } catch (error) {
+            console.error('Firebase update error:', error);
+            // If Firebase update fails, revert to previous state
+            setUserQuantities(prevQuantities => ({ ...prevQuantities }));
+        }
+    };
+  
     return (
         <Router>
             <div className="App">
@@ -98,7 +141,7 @@ const App = () => {
                                     <nav className={isMenuOpen ? 'nav-active' : ''}>
                                         <Link to="/" onClick={() => setIsMenuOpen(false)}>Home</Link>
                                         <div className="dropdown">
-                                            <span className='dropDownTitle'>Card Collection <i class="fa-solid fa-angle-down"></i></span>
+                                            <span className='dropDownTitle'>Card Collection <i className="fa-solid fa-angle-down"></i></span>
                                             <div className="dropdown-content">
                                                 <Link to="/my-collection" onClick={() => setIsMenuOpen(false)}>My Collection</Link>
                                                 <Link to="/sets" onClick={() => setIsMenuOpen(false)}>Set Progress</Link>
@@ -106,7 +149,7 @@ const App = () => {
                                         </div>
 
                                         <div className="dropdown">
-                                        <span className='dropDownTitle'>Decks <i className="fa-solid fa-angle-down"></i></span>
+                                            <span className='dropDownTitle'>Decks <i className="fa-solid fa-angle-down"></i></span>
                                             <div className="dropdown-content">
                                                 <Link to="/my-decks" onClick={() => setIsMenuOpen(false)}>My Decks</Link>
                                                 <Link to="/deck-builder" onClick={() => setIsMenuOpen(false)}>Deck Builder</Link>
@@ -141,7 +184,13 @@ const App = () => {
                                     <Suspense fallback={<LoadingSpinner />}>
                                         <Routes>
                                         <Route path="/" element={<Home getImageUrl={getImageUrl} />} />
-                                        <Route path="/my-collection" element={<MyCollection getImageUrl={getImageUrl} />} />
+                                        <Route path="/my-collection" element={
+                                            <MyCollection 
+                                                getImageUrl={getImageUrl} 
+                                                userQuantities={userQuantities} 
+                                                updateQuantity={updateQuantity}
+                                            />
+                                        } />
                                         <Route path="/sets" element={<SetProgress cards={cards} user={currentUser} />} />
                                         <Route path="/collection" element={<MyCollection getImageUrl={getImageUrl} />} />
                                         <Route path="/deck-builder" element={
@@ -150,6 +199,7 @@ const App = () => {
                                                     cards={cards} 
                                                     user={user}
                                                     showOwnedOnly={showOwnedOnly}
+                                                    userQuantities={userQuantities}
                                                     onOwnedOnlyChange={() => setShowOwnedOnly(!showOwnedOnly)}
                                                     getImageUrl={getImageUrl}
                                                 />
@@ -158,7 +208,12 @@ const App = () => {
                                             )
                                         } />
                                             <Route path="/my-decks" element={<DeckLibrary user={currentUser} getImageUrl={getImageUrl} />} />
-                                            <Route path="/deck/:deckId" element={<DeckView getImageUrl={getImageUrl} />} />
+                                            <Route path="/deck/:deckId" element={
+                                                <DeckView 
+                                                    getImageUrl={getImageUrl}
+                                                    userQuantities={userQuantities}
+                                                />
+                                            } />
                                             <Route path="/deck/edit/:deckId" element={
                                                 cards.length > 0 ? (
                                                     <DeckEditor 

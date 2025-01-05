@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+import { getImageUrl } from '../config';
 
-const DeckAnalytics = ({ deck, leader }) => {
-    const [isOpen, setIsOpen] = useState(false);
+const DeckAnalytics = ({ deck, leader, userCollection, getImageUrl, handleViewDetails, cards }) => {
+    const [isOpen] = useState(false);
 
     // Calculate card type distribution
     const typeDistribution = {
@@ -110,6 +111,59 @@ const DeckAnalytics = ({ deck, leader }) => {
         return acc;
     }, {});
 
+     // Add this new function to calculate missing cards
+     const calculateMissingCards = () => {
+        const missingCards = [];
+        
+        // Check leader card
+        if (leader) {
+            const leaderExtNumber = leader.extNumber;
+            const totalLeaderQuantity = Object.entries(userCollection)
+                .reduce((total, [productId, quantity]) => {
+                    // Find all versions of this card in the database
+                    const card = cards?.find(c => c.productId === productId);
+                    if (card && card.extNumber === leaderExtNumber) {
+                        return total + quantity;
+                    }
+                    return total;
+                }, 0);
+    
+            if (totalLeaderQuantity < 1) {
+                missingCards.push({
+                    ...leader,
+                    neededQuantity: 1,
+                    ownedQuantity: totalLeaderQuantity
+                });
+            }
+        }
+    
+        // Check deck cards
+        deck?.forEach(deckCard => {
+            const cardExtNumber = deckCard.extNumber;
+            const totalQuantity = Object.entries(userCollection)
+                .reduce((total, [productId, quantity]) => {
+                    // Find all versions of this card in the database
+                    const card = cards?.find(c => c.productId === productId);
+                    if (card && card.extNumber === cardExtNumber) {
+                        return total + quantity;
+                    }
+                    return total;
+                }, 0);
+    
+            if (totalQuantity < deckCard.quantity) {
+                missingCards.push({
+                    ...deckCard,
+                    neededQuantity: deckCard.quantity - totalQuantity,
+                    ownedQuantity: totalQuantity
+                });
+            }
+        });
+    
+        return missingCards;
+    };
+
+    const missingCards = calculateMissingCards();
+
 
     return (
         <div className={`deck-analytics ${isOpen ? 'open' : ''}`}>
@@ -128,7 +182,7 @@ const DeckAnalytics = ({ deck, leader }) => {
                         <Bar dataKey="count" fill="#8884d8" />
                     </BarChart>
                 </div>
-
+                
                 <div className='powerDistribution'>
                     <h3>Power Distribution</h3>
                     <BarChart width={300} height={200} data={powerData}>
@@ -139,8 +193,8 @@ const DeckAnalytics = ({ deck, leader }) => {
                         <Bar dataKey="count" fill="#82ca9d" />
                     </BarChart>
                 </div>
-                
-                <div className='typeDistribution'>
+                <hr />
+                <div className='typeDistribution fullWidth'>
                     <h3>Card Type Distribution</h3>
                     <div className="distribution-section">
                         {Object.entries(typeDistribution).map(([type, count]) => (
@@ -151,8 +205,8 @@ const DeckAnalytics = ({ deck, leader }) => {
                         ))}
                     </div>
                 </div>
-
-                <div className='counterDistribution'>
+                <hr />
+                <div className='counterDistribution fullWidth'>
                     <h3>Counter Distribution</h3>
                     <div className="distribution-section">
                         {Object.entries(counterDistribution).map(([counter, count]) => (
@@ -163,8 +217,8 @@ const DeckAnalytics = ({ deck, leader }) => {
                         ))}
                     </div>
                 </div>
-
-                <div className='subtypeDistribution'>
+                <hr />
+                <div className='subtypeDistribution fullWidth'>
                     <h3>Subtype Distribution</h3>
                     <div className="distribution-section">
                         {Object.entries(subtypeDistribution || {}).map(([subtype, count]) => (
@@ -174,8 +228,8 @@ const DeckAnalytics = ({ deck, leader }) => {
                         ))}
                     </div>
                 </div>
-
-                <div className='specialAbilities'>
+                <hr />
+                <div className='specialAbilities fullWidth'>
                     <h3>Special Abilities</h3>
                     <div className="distribution-section">
                         {Object.entries(specialAbilitiesDistribution || {}).map(([ability, count]) => (
@@ -185,7 +239,7 @@ const DeckAnalytics = ({ deck, leader }) => {
                         ))}
                     </div>
                 </div>
-
+                <hr />
                 <div className='deckValue'>
                     <h3>Deck Value</h3>
                     <div className="distribution-section">
@@ -195,13 +249,37 @@ const DeckAnalytics = ({ deck, leader }) => {
                         </div>
                     </div> 
                 </div>
-
-
-
+                <hr />
+                <div className='missingCards'>
+                    <h3>Cards Needed to Complete Deck</h3>
+                    <div className="missing-cards-grid">
+                        {missingCards.length > 0 ? (
+                            missingCards.map((card) => (
+                                <div key={card.id} className="card-container">
+                                    <div className="cards-needed">
+                                        <strong>Not Owned:</strong> {card.neededQuantity}
+                                    </div>
+                                    <img 
+                                        src={getImageUrl(card.imageUrl)}
+                                        alt={card.name}
+                                        className="card-image"
+                                    />
+                                    <button 
+                                        className="viewBttn" 
+                                        onClick={() => handleViewDetails(card)}
+                                    >
+                                        View Details
+                                    </button>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="complete-message">
+                                You have all the cards needed! 🎉
+                            </div>
+                        )}
+                    </div>
+                </div>
             </div>
-
-       
-
 
             <style>{`
                 .deck-analytics {

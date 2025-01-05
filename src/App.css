@@ -17,6 +17,9 @@
   width: 100%;
   max-width: 100%;
 }*/
+hr {
+  width:100%;
+}
 
 .navHolder {
   z-index: 11111;
@@ -807,7 +810,7 @@ input[type=text]:focus {
   grid-row: 1; /* Keep the leaderSection in the first row */
 }
 
-.deck-builder .deckCards, .deck-view .deckCards {
+.deck-builder .deckCards, .deck-view .deckCards,  .analytics-content .missingCards .missing-cards-grid {
   display: grid; /* Use grid for the deckCards section */
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); /* Flexible columns for cards */
   gap: 10px; /* Spacing between cards */
@@ -819,6 +822,27 @@ input[type=text]:focus {
 .deck-builder {
 
 }
+.analytics-content .missingCards {
+  width:100%;
+}
+.analytics-content .missingCards .missing-cards-grid img {
+  width:100%;
+}
+.analytics-content .missingCards .missing-cards-grid .card-container {
+  margin:0px;
+}
+
+.analytics-content .missingCards .complete-message {
+  grid-column:1 / 9;
+}
+.missingCards .missing-cards-grid .card-container {
+  margin-bottom:20px;
+}
+
+.cards-needed {
+  margin-bottom:7px;
+}
+
 @media (max-width:980px) {
   .deck-builder .deck-cards-container {
     display:flex;
@@ -911,6 +935,13 @@ input[type=text]:focus {
 .analytics-content > div {
   margin-left:15px;
   margin-right:15px;
+}
+
+.fullWidth {
+  width:100%;
+}
+.deck-analytics .analytics-content h3 {
+  text-align: left;;
 }
 
 /* Lazy Image Load 

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 //import CardDetail from './CardDetail';
 import DOMPurify from 'dompurify';
-import API_URL, { getImageUrl } from '../config';
+import API_URL from '../config';
 import { firestore } from '../firebase';
 import { collection, query, getDocs } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';

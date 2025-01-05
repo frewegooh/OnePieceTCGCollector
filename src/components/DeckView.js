@@ -13,7 +13,7 @@ import CardDetail from './CardDetail';
 import DeckAnalytics from './DeckAnalytics';
 //import { getImageUrl } from '../config';
 
-const DeckView = ({ getImageUrl }) => {
+const DeckView = ({ getImageUrl, userQuantities }) => {
     const { deckId } = useParams();
     const navigate = useNavigate();
     const [deck, setDeck] = useState(null);
@@ -307,7 +307,14 @@ const DeckView = ({ getImageUrl }) => {
 
             {/* Add the analytics here */}
             <div className="deck-analytics-section">
-                <DeckAnalytics deck={deck.cards} leader={deck.leader} />
+                <DeckAnalytics 
+                    deck={deck.cards} 
+                    leader={deck.leader} 
+                    userCollection={userQuantities}
+                    getImageUrl={getImageUrl}
+                    handleViewDetails={handleViewDetails}
+                    cards={cardData}
+                />
             </div>
         </div>    
 
