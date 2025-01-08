@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { firestore } from '../firebase';
 import DeckBuilder from './DeckBuilder';
 
-const DeckEditor = ({ cards, user, getImageUrl }) => {
+const DeckEditor = ({ cards, user, getImageUrl, userQuantities }) => {
     const { deckId } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
     const [deck, setDeck] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -83,6 +84,7 @@ const DeckEditor = ({ cards, user, getImageUrl }) => {
             onSave={handleUpdateDeck}
             isEditing={true}
             getImageUrl={getImageUrl}
+            userQuantities={location.state?.userQuantities || userQuantities}
         />
     );
 };

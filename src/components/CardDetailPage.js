@@ -140,6 +140,10 @@ const CardDetailPage = ({ getImageUrl }) => {
 
     return (
         <div className="card-detail-page">
+            <LoginPrompt 
+                open={showLoginPrompt} 
+                onClose={() => setShowLoginPrompt(false)} 
+            />
             <div style={{ padding: '1rem' }} className='cardInfoPop'>
                 <p className='cardDetailTitle'>{card.name}</p>   
                 <div className='imgHolder'>

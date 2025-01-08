@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
-import { getImageUrl } from '../config';
+//import { getImageUrl } from '../config';
 
 const DeckAnalytics = ({ deck, leader, userCollection, getImageUrl, handleViewDetails, cards }) => {
     const [isOpen] = useState(false);
@@ -14,19 +14,19 @@ const DeckAnalytics = ({ deck, leader, userCollection, getImageUrl, handleViewDe
     };
 
     deck?.forEach(card => {
-        if (typeDistribution.hasOwnProperty(card.extCardType)) {
-            typeDistribution[card.extCardType] += card.quantity;
+        if (typeDistribution.hasOwnProperty(card?.extCardType)) {
+            typeDistribution[card.extCardType] += (card.quantity || 0);
         }
     });
 
     // Calculate cost distribution
     const costDistribution = deck?.reduce((acc, card) => {
-        const cost = parseInt(card.extCost);
+        const cost = parseInt(card?.extCost);
         if (!isNaN(cost)) {
-            acc[cost] = (acc[cost] || 0) + card.quantity;
+            acc[cost] = (acc[cost] || 0) + (card.quantity || 0);
         }
         return acc;
-    }, {});
+    }, {}) || {};
 
     // Power distribution calculation (new)
     const powerDistribution = deck?.reduce((acc, card) => {
@@ -113,8 +113,14 @@ const DeckAnalytics = ({ deck, leader, userCollection, getImageUrl, handleViewDe
 
      // Add this new function to calculate missing cards
      const calculateMissingCards = () => {
+        //console.log('User Collection:', userCollection);
+        //console.log('Deck Cards:', deck);
+        //console.log('Leader:', leader);
+        //console.log('Cards Database:', cards);
         const missingCards = [];
         
+        if (!userCollection || !cards) return missingCards;
+
         // Check leader card
         if (leader) {
             const leaderExtNumber = leader.extNumber;
@@ -132,7 +138,8 @@ const DeckAnalytics = ({ deck, leader, userCollection, getImageUrl, handleViewDe
                 missingCards.push({
                     ...leader,
                     neededQuantity: 1,
-                    ownedQuantity: totalLeaderQuantity
+                    ownedQuantity: totalLeaderQuantity,
+                    id: leader.productId 
                 });
             }
         }
@@ -154,7 +161,8 @@ const DeckAnalytics = ({ deck, leader, userCollection, getImageUrl, handleViewDe
                 missingCards.push({
                     ...deckCard,
                     neededQuantity: deckCard.quantity - totalQuantity,
-                    ownedQuantity: totalQuantity
+                    ownedQuantity: totalQuantity,
+                    id: deckCard.productId
                 });
             }
         });

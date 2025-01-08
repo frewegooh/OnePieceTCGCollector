@@ -81,8 +81,8 @@ const Login = () => {
                 </button>
             </div>
             <div className="register-prompt">
-                <p>Don't have an account?</p>
-                <Link to="/register">Register here</Link>
+                <p>Don't have an account? <Link to="/register">Register here</Link></p>
+                
             </div>
         </div>
     );

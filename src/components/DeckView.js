@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { doc, getDoc, deleteDoc } from 'firebase/firestore';
+import { doc, getDoc, deleteDoc, collection, addDoc } from 'firebase/firestore';
 import { firestore } from '../firebase';
 //import CardList from './CardList';
 import { Menu, MenuItem } from '@mui/material';
@@ -125,8 +125,16 @@ const DeckView = ({ getImageUrl, userQuantities }) => {
                     deck: {
                         name: deck.name,
                         leader: deck.leader,
-                        cards: deck.cards || []
-                    }
+                        cards: deck.cards || [],
+                        extCardType: deck.extCardType,
+                        extSubtypes: deck.extSubtypes,
+                        extDescription: deck.extDescription,
+                        extCost: deck.extCost,
+                        extPower: deck.extPower,
+                        extCounterplus: deck.extCounterplus,
+                        id: deck.id,
+                    },
+                    userQuantities 
                 }
             });
         }
@@ -165,27 +173,73 @@ const DeckView = ({ getImageUrl, userQuantities }) => {
         handleMenuClose();
     };
 
+    // Copy Deck
+    const handleCopyDeck = async () => {
+        if (!auth.currentUser) return;
+
+        try {
+            const newDeckData = {
+                userId: auth.currentUser.uid,
+                name: `${deck.name} (Copy)`,
+                leaderId: deck.leader.productId,
+                cardIds: deck.cards.map(card => ({
+                    productId: card.productId,
+                    quantity: card.quantity
+                })),
+                timestamp: new Date().toISOString()
+            };
+
+            const deckRef = await addDoc(collection(firestore, 'decks'), newDeckData);
+            navigate(`/deck/${deckRef.id}`);
+        } catch (error) {
+            console.error('Error copying deck:', error);
+        }
+    };
+
+
     if (!deck) return <div>Loading deck...</div>;
 
     return (
         <div className="deck-view">
             <div className="deck-header">
                 <h1>{deck.name}</h1>
-                {isOwner && (
-                    <>
-                        <MoreVertIcon onClick={handleMenuClick} className="menu-icon" />
-                        <Menu
-                            anchorEl={anchorEl}
-                            open={Boolean(anchorEl)}
-                            onClose={handleMenuClose}
-                        >
-                            <MenuItem onClick={handleEdit}>Edit Deck</MenuItem>
-                            <MenuItem onClick={handleDelete}>Delete Deck</MenuItem>
-                            <MenuItem onClick={handleShare}>Share Deck</MenuItem>
-                            <MenuItem onClick={handleExport}>Export Deck</MenuItem>
-                        </Menu>
-                    </>
-                )}
+                {auth.currentUser ? (
+                <>
+                    <MoreVertIcon onClick={handleMenuClick} className="menu-icon" />
+                    <Menu
+                        anchorEl={anchorEl}
+                        open={Boolean(anchorEl)}
+                        onClose={handleMenuClose}
+                    >
+                        {isOwner ? (
+                            [
+                                <MenuItem key="edit" onClick={handleEdit}>Edit Deck</MenuItem>,
+                                <MenuItem key="delete" onClick={handleDelete}>Delete Deck</MenuItem>,
+                                <MenuItem key="share" onClick={handleShare}>Share Deck</MenuItem>,
+                                <MenuItem key="export" onClick={handleExport}>Export Deck</MenuItem>
+                            ]
+                        ) : (
+                            [
+                                <MenuItem key="copy" onClick={handleCopyDeck}>Copy Deck</MenuItem>,
+                                <MenuItem key="share" onClick={handleShare}>Share Deck</MenuItem>,
+                                <MenuItem key="export" onClick={handleExport}>Export Deck</MenuItem>
+                            ]
+                        )}
+                    </Menu>
+                </>
+            ) : (
+                <>
+                    <MoreVertIcon onClick={handleMenuClick} className="menu-icon" />
+                    <Menu
+                        anchorEl={anchorEl}
+                        open={Boolean(anchorEl)}
+                        onClose={handleMenuClose}
+                    >
+                        <MenuItem onClick={handleShare}>Share Deck</MenuItem>
+                        <MenuItem onClick={handleExport}>Export Deck</MenuItem>
+                    </Menu>
+                </>
+            )}
             </div>
                 <div className='deck-cards-container'>
 

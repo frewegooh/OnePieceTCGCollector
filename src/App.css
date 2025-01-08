@@ -1379,3 +1379,11 @@ input[type=text]:focus {
     margin-right:0px;
   }
 }
+
+/* Login */
+.loginBody {
+  width: 100%;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}

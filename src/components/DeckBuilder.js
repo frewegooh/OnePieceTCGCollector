@@ -214,11 +214,11 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl,
             // When in editing mode and initial deck data is provided
             if (initialDeck && isEditing) {
                 // Load the existing deck name
-                setDeckName(initialDeck.name);
+                setDeckName(initialDeck.name || '');
                 // Set the deck's leader card
-                setLeader(initialDeck.leader);
+                setLeader(initialDeck.leader || null);
                 // Load all the deck's cards
-                setDeck(initialDeck.cards);
+                setDeck(initialDeck.cards || []);
             }
         }, [initialDeck, isEditing]);
 
