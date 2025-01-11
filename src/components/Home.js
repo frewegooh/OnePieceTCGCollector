@@ -50,6 +50,15 @@ const Home = ({ getImageUrl }) => {
     //    setMulticolorOnly(checked);
     //};
 
+    // Add this inside the Home component to use the cards state
+    useEffect(() => {
+        //console.log('Cards updated:', cards.length);
+    }, [cards]);
+
+    useEffect(() => {
+        //console.log('Leader distribution updated:', Object.keys(leaderDistribution).length);
+    }, [leaderDistribution]);
+
     // Fetch cards and collection data
     useEffect(() => {
         const loadUserCardData = async () => {
@@ -131,11 +140,11 @@ const Home = ({ getImageUrl }) => {
 
 
     // Update the leader dropdown options
-    const leaderOptions = Object.values(leaderGroups).map(leader => (
-        <option key={leader.extNumber} value={leader.extNumber}>
-            {leader.name} ({leader.count})
-        </option>
-    ));
+    //const leaderOptions = Object.values(leaderGroups).map(leader => (
+    //    <option key={leader.extNumber} value={leader.extNumber}>
+    //        {leader.name} ({leader.count})
+    //    </option>
+    //));
 
 
     const pieOptions = {
@@ -177,7 +186,11 @@ const Home = ({ getImageUrl }) => {
         const leaderMatch = !selectedLeader || 
             (deck.leader && deck.leader.extNumber === selectedLeader);
         const colorMatch = selectedColors.length === 0 || 
-            selectedColors.some(color => deck.colors.includes(color));
+            (deck.leader && deck.leader.extColor && selectedColors.some(color => 
+                Array.isArray(deck.leader.extColor) 
+                    ? deck.leader.extColor.includes(color)
+                    : deck.leader.extColor.split(';').includes(color)
+            ));
         
         return leaderMatch && colorMatch;
     });

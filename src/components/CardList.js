@@ -100,7 +100,7 @@ function CardList({
                                     {deckQuantities[card.productId]}
                                 </div>
                             )}
-
+                            
                             <LazyImage 
                                 card={card}
                                 onClick={(e) => {
@@ -109,9 +109,9 @@ function CardList({
                                 }}
                                 style={{ cursor: 'pointer' }}
                             />
-                            <h3>{card.cleanName}</h3>
+                            <h5 className='cardTitle'>{card.cleanName}</h5>
                             {showQuantity && updateQuantity && (
-                                <div style={{ marginTop: '10px' }}>
+                                <div className='OwnedField'>
                                     <label>
                                         Owned:
                                         <input

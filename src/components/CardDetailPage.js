@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import LoginPrompt from './LoginPrompt';
+import { getTCGPlayerUrl } from '../utils/urlUtils'
 
 
 export const formatCardTextWithHTML = (text) => {
@@ -20,7 +21,7 @@ export const formatCardTextWithHTML = (text) => {
     return DOMPurify.sanitize(formattedText);
 };
 
-const CardDetailPage = ({ getImageUrl }) => {
+const CardDetailPage = ({ getImageUrl, trackTCGPlayerClick }) => {
     const { cardId } = useParams();
     const [card, setCard] = useState(null);
     const [imageUrl, setImageUrl] = useState(null);
@@ -151,9 +152,10 @@ const CardDetailPage = ({ getImageUrl }) => {
                     <div className='tcgPlayerBttn'>
                         {card.url && (
                             <a 
-                                href={card.url} 
+                                href={getTCGPlayerUrl(card.productId)}
                                 target="_blank" 
                                 rel="noopener noreferrer"
+                                onClick={() => trackTCGPlayerClick(card.name)}
                                 style={{
                                     display: 'inline-block',
                                     marginTop: '1rem',

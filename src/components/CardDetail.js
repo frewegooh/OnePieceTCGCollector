@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import DOMPurify from 'dompurify';
 import { getImageUrl } from '../config';
 import { useNavigate } from 'react-router-dom';
+import { getTCGPlayerUrl } from '../utils/urlUtils';
 
 
 export const formatCardTextWithHTML = (text) => {
@@ -16,7 +17,7 @@ export const formatCardTextWithHTML = (text) => {
 };
 
 
-const CardDetail = ({ card, onPrevious, onNext }) => {
+const CardDetail = ({ card, onPrevious, onNext, trackTCGPlayerClick }) => {
     const [showInfo, setShowInfo] = useState(false);
     const [imageUrl, setImageUrl] = useState(null);
     const [showShareMessage, setShowShareMessage] = useState(false);
@@ -70,9 +71,10 @@ const CardDetail = ({ card, onPrevious, onNext }) => {
                 <div className='tcgPlayerBttn'>
                     {card.url && (
                         <a 
-                            href={card.url} 
+                            href={getTCGPlayerUrl(card.productId)} 
                             target="_blank" 
                             rel="noopener noreferrer"
+                            onClick={() => trackTCGPlayerClick && trackTCGPlayerClick(card.name)}
                             style={{
                                 display: 'inline-block',
                                 marginTop: '1rem',
@@ -80,11 +82,11 @@ const CardDetail = ({ card, onPrevious, onNext }) => {
                                 textDecoration: 'underline',
                             }}
                         >
-                            
-                                {card.marketPrice !== undefined && (
-                                    <p><strong>TCGPlayer:</strong> ${card.marketPrice}</p>
-                                )}
-                            
+                        
+                            {card.marketPrice !== undefined && (
+                                <p><strong>TCGPlayer:</strong> ${card.marketPrice}</p>
+                            )}
+                        
                         </a>
                         
                     )}

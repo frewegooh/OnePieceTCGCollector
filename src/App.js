@@ -11,6 +11,7 @@ import LoadingSpinner from './components/LoadingSpinner';
 import Footer from './components/Footer';
 import CardDetailPage from './components/CardDetailPage';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
+import ReactGA from 'react-ga4';
 
 const App = () => {
     const { currentUser } = useAuth();
@@ -29,9 +30,20 @@ const App = () => {
     const SetProgress = lazy(() => import('./components/SetProgress'));
     const TermsOfService = lazy(() => import('./components/TermsOfService'));
     const PrivacyPolicy = lazy(() => import('./components/PrivacyPolicy'));
-
-
     const [userQuantities, setUserQuantities] = useState({});
+
+    useEffect(() => {
+        ReactGA.initialize('G-HHW1SFVVBB');
+    }, []);
+
+    const trackTCGPlayerClick = (cardName) => {
+        ReactGA.event({
+            category: 'Outbound Link',
+            action: 'Click TCGPlayer Link',
+            label: cardName
+        });
+    };
+
 
     useEffect(() => {
         const fetchUserQuantities = async () => {
@@ -189,6 +201,7 @@ const App = () => {
                                                 getImageUrl={getImageUrl} 
                                                 userQuantities={userQuantities} 
                                                 updateQuantity={updateQuantity}
+                                                trackTCGPlayerClick={trackTCGPlayerClick}
                                             />
                                         } />
                                         <Route path="/sets" element={<SetProgress cards={cards} user={currentUser} />} />
@@ -202,6 +215,7 @@ const App = () => {
                                                     userQuantities={userQuantities}
                                                     onOwnedOnlyChange={() => setShowOwnedOnly(!showOwnedOnly)}
                                                     getImageUrl={getImageUrl}
+                                                    trackTCGPlayerClick={trackTCGPlayerClick}
                                                 />
                                             ) : (
                                                 <div>Loading...</div>
@@ -220,6 +234,7 @@ const App = () => {
                                                         cards={cards} 
                                                         user={currentUser}
                                                         getImageUrl={getImageUrl}
+                                                        trackTCGPlayerClick={trackTCGPlayerClick}
                                                     />
                                                 ) : (
                                                     <div>Loading...</div>
@@ -229,7 +244,12 @@ const App = () => {
                                             <Route path="/register" element={<Register />} />
                                             <Route path="/terms" element={<TermsOfService />} />
                                             <Route path="/privacy" element={<PrivacyPolicy />} />
-                                            <Route path="/card/:cardId" element={<CardDetailPage getImageUrl={getImageUrl} />} />
+                                            <Route path="/card/:cardId" element={
+                                                <CardDetailPage 
+                                                    getImageUrl={getImageUrl}
+                                                    trackTCGPlayerClick={trackTCGPlayerClick}
+                                                />
+                                            }/>
                                         </Routes>
                                     </Suspense>
                                 )}

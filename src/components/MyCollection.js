@@ -10,7 +10,7 @@ import API_URL from '../config';
 import LoginPrompt from './LoginPrompt';
 import { useLocation } from 'react-router-dom';
 
-const MyCollection = ({ getImageUrl }) => {
+const MyCollection = ({ getImageUrl, trackTCGPlayerClick }) => {
     const [showLoginPrompt, setShowLoginPrompt] = useState(false);
     const [user, setUser] = useState(null);
     const [cards, setCards] = useState([]);
@@ -421,7 +421,7 @@ const updateQuantity = async (cardId, newQuantity) => {
                         cards={filteredCards.slice(0, displayedCards)}
                         updateQuantity={updateQuantity}
                         onSecondaryButtonClick={handleViewDetails}
-                        secondaryButtonLabel="View Details"
+                        secondaryButtonLabel="Card Info"
                         enableCardClick={true}
                         showQuantity={true}
                         getImageUrl={getImageUrl}
@@ -438,7 +438,8 @@ const updateQuantity = async (cardId, newQuantity) => {
                     <CardDetail 
                         card={selectedCard} 
                         onPrevious={handlePreviousCard} 
-                        onNext={handleNextCard} 
+                        onNext={handleNextCard}
+                        trackTCGPlayerClick={trackTCGPlayerClick}
                     />
                 )}
             </Modal>

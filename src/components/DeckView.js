@@ -255,7 +255,7 @@ const DeckView = ({ getImageUrl, userQuantities }) => {
                                 className="viewBttn" 
                                 onClick={() => handleViewDetails(deck.leader)}
                             >
-                                View Details
+                                Card Info
                             </button>
                     </div>
 
@@ -273,7 +273,7 @@ const DeckView = ({ getImageUrl, userQuantities }) => {
                                     className="viewBttn" 
                                     onClick={() => handleViewDetails(card)}
                                 >
-                                    View Details
+                                    Card Info
                                 </button>
                             </div>
                             

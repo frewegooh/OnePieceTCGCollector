@@ -10,7 +10,7 @@ const LoginPrompt = ({ open, onClose }) => {
             </DialogContent>
             <DialogActions>
                 <Button onClick={onClose}>Close</Button>
-                <Button href="/login" variant="contained" color="primary">
+                <Button className='button'  href="/login" variant="contained" color="primary">
                     Login / Sign Up
                 </Button>
             </DialogActions>

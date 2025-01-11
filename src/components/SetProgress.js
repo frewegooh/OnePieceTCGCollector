@@ -117,14 +117,14 @@ const SetProgress = ({ cards, user }) => {
         'Royal Bloodlines': '23766'
     };
 
-    const handleSetClick = (setId) => {
-        navigate('/collection', { 
-            state: { 
-                selectedGroupID: setId,
-                initialOwnedOnly: true 
-            } 
-        });
-    };
+    //const handleSetClick = (setId) => {
+    //    navigate('/collection', { 
+    //        state: { 
+    //            selectedGroupID: setId,
+    //            initialOwnedOnly: true 
+    //        } 
+    //    });
+    //};
 
     return (
         <div className="set-progress-container">

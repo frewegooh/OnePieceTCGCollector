@@ -12,7 +12,7 @@ import { MessageModal } from './ShareModal';
 import DeckAnalytics from './DeckAnalytics';
 import ImportDeckModal from './ImportDeckModal';
 
-const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl, userQuantities }) => {
+const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl, userQuantities, trackTCGPlayerClick }) => {
     const { currentUser } = useAuth();
     // Move ALL useState declarations here, before any conditional checks
     const [showLoginPrompt, setShowLoginPrompt] = useState(false);
@@ -488,8 +488,8 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl,
             <div className="cardBuilderPar">
                 <div className="deckSection">
                     <div className='deckBuilderHead'>
-                        <h2>Your Deck ({deck ? deck.reduce((sum, card) => sum + card.quantity, 0) : 0}/50)</h2>
-                        <button onClick={() => setShowImportModal(true)}>Import Deck</button>
+                        <h2>Cards ({deck ? deck.reduce((sum, card) => sum + card.quantity, 0) : 0}/50)</h2>
+                        <button onClick={() => setShowImportModal(true)}>Import Deck From Simulator</button>
                         <input
                             type="text"
                             value={deckName}
@@ -527,7 +527,7 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl,
                                     setShowLeaderPicker(false);
                                 }}
                                 onPrimaryButtonClick={(card) => handleViewDetails(card, 'leader')}
-                                primaryButtonLabel="Details"
+                                primaryButtonLabel="Card Info"
                                 secondaryButtonLabel="-"
                                 enableCardClick={true}
                             />
@@ -544,7 +544,7 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl,
                                     <div className="card-controls">
                                         <button onClick={() => handleRemoveFromDeck(card)}>-</button>
                                         <button onClick={() => handleAddToDeck(card)}>+</button>
-                                        <button onClick={() => handleViewDetails(card, 'deck')}>Details</button>
+                                        <button onClick={() => handleViewDetails(card, 'deck')}>Card Info</button>
                                     </div>
                                 </div>
                             ))}
@@ -635,7 +635,7 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl,
                                 })}
                             />
                         </div>
-                <div className="rightCardPanel cardListCSS">
+                <div className="rightCardPanel cardListCSS deckBuilderList">
                     <CardList
                         cards={showLeaderPicker 
                             ? filteredCards.filter(card => card.extCardType === 'Leader').slice(0, displayedCards)
@@ -643,7 +643,7 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl,
                         onSecondaryButtonClick={showLeaderPicker ? handlePickLeader : handleAddToDeck}
                         onPrimaryButtonClick={(card) => handleViewDetails(card, 'picker')}
                         onCardClick={handleViewDetails}
-                        primaryButtonLabel="Details"
+                        primaryButtonLabel="Card Info"
                         secondaryButtonLabel="+"
                         showQuantity={true}
                         deckQuantities={deck.reduce((acc, card) => {
@@ -672,6 +672,7 @@ const DeckBuilder = ({ cards, user, initialDeck, onSave, isEditing, getImageUrl,
                     card={selectedCard} 
                     onPrevious={selectedCard.source !== 'leader' ? handlePreviousCard : undefined}
                     onNext={selectedCard.source !== 'leader' ? handleNextCard : undefined}
+                    trackTCGPlayerClick={trackTCGPlayerClick}
                 />
             )}
         </Modal>
