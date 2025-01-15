@@ -105,6 +105,55 @@ const App = () => {
         }
     };
 
+
+    const fetchData = async () => {
+        setIsLoading(true);
+        try {
+            const response = await fetch(`${API_URL}/api/cards`);
+            const allCards = await response.json();
+            setCards(allCards);
+        } catch (error) {
+            console.error('Error fetching cards:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    
+    // Update the useEffect to use the extracted function
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    // Add this function alongside handleDownloadImages
+    const handleCheckNewCards = async () => {
+        try {
+            const response = await fetch(`${API_URL}/api/check-new-cards`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+    
+            const result = await response.json();
+            
+            if (result.success) {
+                const updateMessage = result.updates.length > 0 
+                    ? `Updates found:\n${result.updates.map(u => `${u.filename}: ${u.newEntries} new cards`).join('\n')}`
+                    : 'No new cards found';
+                alert(updateMessage);
+                
+                // Force refresh of card data
+                fetchData();
+            } else {
+                alert('Check failed: ' + result.error);
+            }
+        } catch (error) {
+            alert('Network connection error - check console for details');
+        }
+    };
+    
+
+
     const updateQuantity = async (cardId, newQuantity) => {
         if (!currentUser) return;
     
@@ -182,9 +231,14 @@ const App = () => {
                                             <Link to="/login" onClick={() => setIsMenuOpen(false)}>Login</Link>
                                         )}
                                         {currentUser && currentUser.uid === ADMIN_USER_ID && (
+                                            <>
                                             <button onClick={handleDownloadImages} style={{ marginTop: '20px' }}>
                                                 Download Images
                                             </button>
+                                            <button onClick={handleCheckNewCards} style={{ marginTop: '20px' }}>
+                                                Check New Cards
+                                            </button>
+                                            </>
                                         )}
                                     </nav>
                                 </header>

@@ -354,7 +354,7 @@ app.get('/api/cards', async (req, res) => {
 
 
 
-// New endpoint to force price updates
+// Endpoint to force price updates
 app.post('/api/update-prices', async (req, res) => {
     try {
         invalidateCache();
@@ -369,6 +369,82 @@ app.post('/api/update-prices', async (req, res) => {
         res.status(500).json({ error: "Error updating prices" });
     }
 });
+
+
+// Endpoint to check and add new card entries from tcgcsv.com
+// This endpoint:
+// 1. Fetches latest data from all URLs in csvMapping
+// 2. Compares productIds with existing CSV files
+// 3. Appends any new card entries to the appropriate CSV files
+// 4. Invalidates cache to include new entries immediately
+// Usage: Send POST request to /api/check-new-cards
+// Returns: JSON with update status and count of new entries per file
+app.post('/api/check-new-cards', async (req, res) => {
+    try {
+        const updates = [];
+        
+        for (const [url, filename] of Object.entries(csvMapping)) {
+            // Get current CSV content
+            const filePath = path.join(__dirname, 'csv-files', filename);
+            const existingContent = fs.readFileSync(filePath, 'utf-8');
+            const existingCards = Papa.parse(existingContent, { header: true, skipEmptyLines: true }).data;
+            
+            // Fetch new data
+            const response = await axios.get(url);
+            const newData = Papa.parse(response.data, { header: true, skipEmptyLines: true }).data;
+            
+            // Find new entries
+            const newEntries = newData.filter(newCard => 
+                newCard.productId && !existingCards.some(existing => 
+                    existing.productId === newCard.productId
+                )
+            );
+            
+            // In the /api/check-new-cards endpoint, update the CSV writing section:
+            if (newEntries.length > 0) {
+                // Get the header row from existing content
+                const headers = Object.keys(existingCards[0]);
+                
+                // Format new entries to match existing structure
+                const formattedEntries = newEntries.map(entry => {
+                    // Ensure each field from the headers is properly mapped
+                    const rowData = headers.map(header => {
+                        // Handle special cases like arrays or empty values
+                        if (header === 'extColor') {
+                            return Array.isArray(entry[header]) ? entry[header].join(';') : entry[header];
+                        }
+                        // Ensure each field is properly quoted if needed
+                        const value = entry[header] || '';
+                        return value.includes(',') ? `"${value}"` : value;
+                    });
+                    return rowData.join(',');
+                });
+            
+                // Append new entries with proper line breaks
+                const csvWriter = fs.createWriteStream(filePath, { flags: 'a' });
+                formattedEntries.forEach(row => {
+                    csvWriter.write('\n' + row);
+                });
+                csvWriter.end();
+            }
+        }
+        
+        // Invalidate cache to include new entries
+        invalidateCache();
+        
+        res.json({
+            success: true,
+            updates
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+
 
 // Endpoint to download all images for cards
 app.post('/api/download-all-images', async (req, res) => {

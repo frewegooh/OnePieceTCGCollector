@@ -216,13 +216,13 @@ const DeckView = ({ getImageUrl, userQuantities }) => {
                                 <MenuItem key="edit" onClick={handleEdit}>Edit Deck</MenuItem>,
                                 <MenuItem key="delete" onClick={handleDelete}>Delete Deck</MenuItem>,
                                 <MenuItem key="share" onClick={handleShare}>Share Deck</MenuItem>,
-                                <MenuItem key="export" onClick={handleExport}>Export Deck</MenuItem>
+                                <MenuItem key="export" onClick={handleExport}>Export Deck For Simulator</MenuItem>
                             ]
                         ) : (
                             [
                                 <MenuItem key="copy" onClick={handleCopyDeck}>Copy Deck</MenuItem>,
                                 <MenuItem key="share" onClick={handleShare}>Share Deck</MenuItem>,
-                                <MenuItem key="export" onClick={handleExport}>Export Deck</MenuItem>
+                                <MenuItem key="export" onClick={handleExport}>Export Deck For Simulator</MenuItem>
                             ]
                         )}
                     </Menu>
@@ -236,7 +236,7 @@ const DeckView = ({ getImageUrl, userQuantities }) => {
                         onClose={handleMenuClose}
                     >
                         <MenuItem onClick={handleShare}>Share Deck</MenuItem>
-                        <MenuItem onClick={handleExport}>Export Deck</MenuItem>
+                        <MenuItem onClick={handleExport}>Export Deck For Simulator</MenuItem>
                     </Menu>
                 </>
             )}
