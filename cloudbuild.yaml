@@ -17,4 +17,4 @@ steps:
       - 'NODE_OPTIONS=--openssl-legacy-provider'
       
   - name: 'gcr.io/cloud-builders/gcloud'
-    args: ['app', 'deploy']
+    args: ['run', 'deploy', 'card-tracker', '--image', 'gcr.io/$PROJECT_ID/card-tracker', '--platform', 'managed', '--region', 'us-central1', '--allow-unauthenticated']
