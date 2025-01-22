@@ -21,7 +21,7 @@ export const formatCardTextWithHTML = (text) => {
     return DOMPurify.sanitize(formattedText);
 };
 
-const CardDetailPage = ({ getImageUrl, trackTCGPlayerClick }) => {
+const CardDetailPage = ({ getImageUrl, trackTCGPlayerClick, updateWishList, userWishList }) => {
     const { cardId } = useParams();
     const [card, setCard] = useState(null);
     const [imageUrl, setImageUrl] = useState(null);
@@ -179,6 +179,19 @@ const CardDetailPage = ({ getImageUrl, trackTCGPlayerClick }) => {
                             type="number"
                             value={quantity}
                             onChange={(e) => handleQuantityUpdate(parseInt(e.target.value, 10) || 0)}
+                            style={{ width: '50px', marginLeft: '5px' }}
+                            min="0"
+                        />
+                    </label>
+                </div>
+
+                <div style={{ marginTop: '10px' }}>
+                    <label>
+                        <strong>Wanted:</strong>
+                        <input
+                            type="number"
+                            value={userWishList?.[cardId] || 0}
+                            onChange={(e) => updateWishList(cardId, parseInt(e.target.value, 10) || 0)}
                             style={{ width: '50px', marginLeft: '5px' }}
                             min="0"
                         />

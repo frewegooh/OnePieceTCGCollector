@@ -1,6 +1,29 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
-const Modal = ({ isOpen, onClose, children }) => {
+const Modal = ({ isOpen, onClose, children, onPrevious, onNext }) => {
+
+    useEffect(() => {
+        const handleKeyPress = (e) => {
+            if (e.key === 'ArrowLeft' && onPrevious) {
+                onPrevious();
+            }
+            if (e.key === 'ArrowRight' && onNext) {
+                onNext();
+            }
+            if (e.key === 'Escape') {
+                onClose();
+            }
+        };
+
+        if (isOpen) {
+            window.addEventListener('keydown', handleKeyPress);
+        }
+
+        return () => {
+            window.removeEventListener('keydown', handleKeyPress);
+        };
+    }, [isOpen, onClose, onPrevious, onNext]);
+
     if (!isOpen) return null;
 
     return (

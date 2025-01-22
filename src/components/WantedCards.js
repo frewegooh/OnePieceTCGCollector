@@ -11,11 +11,8 @@ import LoginPrompt from './LoginPrompt';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
-const MyCollection = ({ getImageUrl, trackTCGPlayerClick, updateWishList, userWishList, setUserWishList,
-    updateQuantity   }) => {
-    //console.log('MyCollection: updateQuantity prop:', updateQuantity);
+const WantedCards = ({ getImageUrl, trackTCGPlayerClick, updateWishList, userWishList }) => {
     const [showLoginPrompt, setShowLoginPrompt] = useState(false);
-    //const [_user, setUser] = useState(null);
     const [cards, setCards] = useState([]);
     const [filteredCards, setFilteredCards] = useState([]);
     const [selectedCard, setSelectedCard] = useState(null);
@@ -40,6 +37,7 @@ const MyCollection = ({ getImageUrl, trackTCGPlayerClick, updateWishList, userWi
     const location = useLocation();
     //const [showWishList, setShowWishList] = useState(false);
     const { currentUser } = useAuth();
+    const [localWishList, setLocalWishList] = useState({});
 
     useEffect(() => {
         const syncWithFirebase = async () => {
@@ -47,11 +45,11 @@ const MyCollection = ({ getImageUrl, trackTCGPlayerClick, updateWishList, userWi
                 const docRef = doc(firestore, 'users', currentUser.uid);
                 const docSnap = await getDoc(docRef);
                 const userData = docSnap.data();
-                setUserWishList(userData?.wishList || {});
+                setLocalWishList(userData?.wishList || {});
             }
         };
         syncWithFirebase();
-    }, [currentUser, setUserWishList]);
+    }, [currentUser]);
 
 
 
@@ -148,47 +146,10 @@ const MyCollection = ({ getImageUrl, trackTCGPlayerClick, updateWishList, userWi
     };
     
 
-    // Add handleColorFilterChange function
-    const handleColorFilterChange = (updatedColors) => {
-        setSelectedColors(updatedColors);
-    };
-
-// Add updateQuantity function
-// const updateQuantity = async (cardId, newQuantity) => {
-//     if (!user) return;
-
-//     const docRef = doc(firestore, 'users', user.uid);
-//     try {
-//         const docSnap = await getDoc(docRef);
-//         const currentQuantities = docSnap.exists() ? docSnap.data().cardQuantities || {} : {};
-//         const updatedQuantities = {};
-        
-//         for (const [id, qty] of Object.entries(currentQuantities)) {
-//             if (id !== cardId && qty > 0) {
-//                 updatedQuantities[id] = qty;
-//             }
-//         }
-
-//         if (newQuantity > 0) {
-//             updatedQuantities[cardId] = newQuantity;
-//         }
-
-//         await setDoc(docRef, { cardQuantities: updatedQuantities });
-
-//         setCards(prevCards => 
-//             prevCards.map(card => 
-//                 card.productId === cardId ? { ...card, quantity: newQuantity } : card
-//             )
-//         );
-//         setFilteredCards(prevCards => 
-//             prevCards.map(card => 
-//                 card.productId === cardId ? { ...card, quantity: newQuantity } : card
-//             )
-//         );
-//     } catch (error) {
-//         console.error('Firebase update error:', error);
-//     }
-// };
+// Add handleColorFilterChange function
+const handleColorFilterChange = (updatedColors) => {
+    setSelectedColors(updatedColors);
+};
 
         // Add card navigation handlers
         const handleViewDetails = (card) => {
@@ -257,6 +218,10 @@ const MyCollection = ({ getImageUrl, trackTCGPlayerClick, updateWishList, userWi
 
         useEffect(() => {
             const filtered = cards.filter((card) => {    
+
+                const hasWishlistQuantity = localWishList[card.productId] > 0;
+                if (!hasWishlistQuantity) return false;
+
                 const cardColors = Array.isArray(card.extColor) ? 
                     card.extColor : 
                     (typeof card.extColor === 'string' ? card.extColor.split(';') : []);
@@ -304,7 +269,7 @@ const MyCollection = ({ getImageUrl, trackTCGPlayerClick, updateWishList, userWi
                     selectedAttributes.length === 0 ||
                     selectedAttributes.includes(card.extAttribute);
         
-                const matchesOwned = !showOwnedOnly || card.quantity > 0;        
+                //const matchesOwned = !showOwnedOnly || card.quantity > 0;        
         
                 return (
                     matchesColor &&
@@ -314,8 +279,7 @@ const MyCollection = ({ getImageUrl, trackTCGPlayerClick, updateWishList, userWi
                     matchesPower &&
                     matchesGroup &&
                     matchesAttribute &&
-                    matchesCounter &&
-                    matchesOwned
+                    matchesCounter
                 );
             });
         
@@ -331,7 +295,8 @@ const MyCollection = ({ getImageUrl, trackTCGPlayerClick, updateWishList, userWi
             selectedTypes,
             selectedAttributes,
             selectedCounterValues,
-            showOwnedOnly
+            showOwnedOnly,
+            localWishList
         ]);
 
         useEffect(() => {
@@ -390,28 +355,13 @@ const MyCollection = ({ getImageUrl, trackTCGPlayerClick, updateWishList, userWi
             return () => window.removeEventListener('scroll', handleScroll);
         }, []);
 
-        // useEffect(() => {
-        //     console.log('MyCollection cards updated:', cards);
-        // }, [cards]);
-        
-        // useEffect(() => {
-        //     console.log('MyCollection filteredCards updated:', filteredCards);
-        // }, [filteredCards]);
-
-        const onFilteredCardsChange = useCallback((filtered) => {
-            setFilteredCards(filtered);
-        }, []);
-
-
     return (
         <>
-            <div className='myCollectionPage'>
-
+            <div className='wantedCardsPage'>
                 <div className="sideFilterPar">
                     <FilterSidebar
                         cards={cards}
-                        onFilteredCardsChange={onFilteredCardsChange}
-                        //onFilteredCardsChange={setFilteredCards}
+                        onFilteredCardsChange={setFilteredCards}
                         selectedColors={selectedColors}
                         onColorChange={handleColorFilterChange}
                         availableColors={availableColors}
@@ -437,32 +387,30 @@ const MyCollection = ({ getImageUrl, trackTCGPlayerClick, updateWishList, userWi
                         selectedGroupID={selectedGroupID}
                         onGroupChange={setSelectedGroupID}
                         groupMap={groupMap}
-                        showOwnedOnly={showOwnedOnly}
-                        onOwnedOnlyChange={() => setShowOwnedOnly(!showOwnedOnly)}
+                        userWishList={localWishList}
                     />
                 </div>
 
                 <div className="collectionPage cardListCSS">
-                    <div className="total-value">
-                        Total Collection Value: $
-                            {cards.reduce((total, card) => {
-                                const price = parseFloat(card.marketPrice) || 0;
-                                const quantity = card.quantity || 0;
-                                return total + (price * quantity);
-                            }, 0).toFixed(2)}
-                    </div>
-                    <CardList
-                        cards={filteredCards.slice(0, displayedCards)}
-                        updateQuantity={updateQuantity}
-                        updateWishList={updateWishList}  
-                        //showWishList={showWishList}  
-                        userWishList={userWishList}    
-                        onSecondaryButtonClick={handleViewDetails}
-                        secondaryButtonLabel="Card Info"
-                        enableCardClick={true}
-                        showQuantity={true}
-                        getImageUrl={getImageUrl}
-                    />
+                    {filteredCards.length > 0 ? (
+                        <>
+                        <CardList
+                            cards={filteredCards.slice(0, displayedCards)}
+                            updateWishList={updateWishList}  
+                            showWishList={true}  
+                            userWishList={localWishList}    
+                            onSecondaryButtonClick={handleViewDetails}
+                            secondaryButtonLabel="Card Info"
+                            enableCardClick={true}
+                            showQuantity={false}
+                            getImageUrl={getImageUrl}
+                        />
+                        </>
+                    ) : (
+                        <div className="no-cards-message">
+                            You currently have no wanted cards.
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -484,4 +432,4 @@ const MyCollection = ({ getImageUrl, trackTCGPlayerClick, updateWishList, userWi
     );
 };
 
-export default MyCollection;
+export default WantedCards;

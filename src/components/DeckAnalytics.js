@@ -2,7 +2,7 @@ import React, { useState, useMemo, useCallback  } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 //import { getImageUrl } from '../config';
 
-const DeckAnalytics = ({ deck, leader, userCollection, getImageUrl, handleViewDetails, cards }) => {
+const DeckAnalytics = ({ deck, leader, userCollection, getImageUrl, handleViewDetails, cards, updateWishList }) => {
     const [isOpen] = useState(false);
 
     // Calculate card type distribution
@@ -276,6 +276,13 @@ const DeckAnalytics = ({ deck, leader, userCollection, getImageUrl, handleViewDe
         return `${baseUrl}c=${cardParam}${productLine}`;
     }, [deck, leader, userCollection, cards]);
 
+    // Add handler function for adding missing cards to wishlist
+    const handleAddMissingToWishlist = () => {
+        missingCards.forEach(card => {
+            updateWishList(card.productId, card.neededQuantity);
+        });
+    };
+
     const totalDeckValue = useMemo(() => calculateTotalValue(), [calculateTotalValue]);
     const missingCardsValue = useMemo(() => calculateMissingCardsValue(), [calculateMissingCardsValue]);
     const tcgPlayerUrl = useMemo(() => generateTCGPlayerUrl(), [generateTCGPlayerUrl]);
@@ -419,6 +426,14 @@ const DeckAnalytics = ({ deck, leader, userCollection, getImageUrl, handleViewDe
                             </div>
                         )}
                     </div>
+                    {missingCards.length > 0 && (
+                        <button 
+                            className="add-to-wishlist-button"
+                            onClick={handleAddMissingToWishlist}
+                        >
+                            Add Missing Cards to Wanted List
+                        </button>
+                    )}
                 </div>
             </div>
 
