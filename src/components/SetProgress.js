@@ -66,6 +66,7 @@ const SetProgress = ({ cards, user }) => {
     };
 
     const setNameToId = {
+        'Royal Blood': '23766',
         'Emperors in the New World': '23589',
         'Premium Booster -The Best-': '23496',
         'Two Legends': '23462',
