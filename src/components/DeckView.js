@@ -13,7 +13,7 @@ import CardDetail from './CardDetail';
 import DeckAnalytics from './DeckAnalytics';
 //import { getImageUrl } from '../config';
 
-const DeckView = ({ getImageUrl, userQuantities }) => {
+const DeckView = ({ getImageUrl, userQuantities, updateWishList }) => {
     const { deckId } = useParams();
     const navigate = useNavigate();
     const [deck, setDeck] = useState(null);
@@ -368,6 +368,7 @@ const DeckView = ({ getImageUrl, userQuantities }) => {
                     getImageUrl={getImageUrl}
                     handleViewDetails={handleViewDetails}
                     cards={cardData}
+                    updateWishList={updateWishList}
                 />
             </div>
         </div>    

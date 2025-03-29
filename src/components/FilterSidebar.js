@@ -1,5 +1,5 @@
 //import React, { useState, useEffect } from 'react';
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import MultiSelectDropdown from './MultiSelectDropdown';
 
 const FilterSidebar = ({
@@ -32,87 +32,89 @@ const FilterSidebar = ({
     groupMap = {},
     showOwnedOnly = false,
     onOwnedOnlyChange,
+    userWishList = {}
 }) => {
 
-    useEffect(() => {
-        if (cards?.length > 0) {
-            const filtered = cards.filter((card) => {
-                // Ensure defensive handling for undefined/null properties
-                const cardColors = Array.isArray(card.extColor) ? 
-                    card.extColor : 
-                    (typeof card.extColor === 'string' ? card.extColor.split(';') : []);
-                    
-                const matchesColor = (() => {
-                    if (multicolorOnly) {
-                        const isMulticolor = cardColors.length > 1;
-                        if (!isMulticolor) return false;
-                        return (
-                            selectedColors.length === 0 ||
-                            selectedColors.some((color) => cardColors.includes(color))
-                        );
-                    }
+    const filteredResults = useMemo(() => {
+        if (!cards?.length) return [];
+        return cards.filter((card) => {
+            const cardCost = parseInt(card.extCost, 10);
+            const cardPower = parseInt(card.extPower, 10);
+            const cardCounter = parseInt(card.extCounterplus, 10);
+
+
+            const cardColors = Array.isArray(card.extColor) ? 
+                card.extColor : 
+                (typeof card.extColor === 'string' ? card.extColor.split(';') : []);
+
+            const matchesColor = (() => {
+                if (multicolorOnly) {
+                    const isMulticolor = cardColors.length > 1;
+                    if (!isMulticolor) return false;
                     return (
                         selectedColors.length === 0 ||
                         selectedColors.some((color) => cardColors.includes(color))
                     );
-                })();
-    
-                const matchesSearchQuery = searchQuery?.trim()?.toLowerCase()
-                    ? Object.values(card || {}).some((value) =>
-                          value
-                              ?.toString()
-                              ?.toLowerCase()
-                              ?.includes(searchQuery.trim().toLowerCase())
-                      )
-                    : true;
-    
-                const matchesType =
-                    selectedTypes?.length === 0 ||
-                    selectedTypes.includes(card.extCardType);
-    
-                const matchesCost =
-                    selectedCostValues?.length === 0 ||
-                    selectedCostValues.includes(parseInt(card.extCost, 10));
-    
-                const matchesPower =
-                    selectedPowerValues?.length === 0 ||
-                    selectedPowerValues.includes(parseInt(card.extPower, 10));
-    
-                const matchesAttribute =
-                    selectedAttributes?.length === 0 ||
-                    selectedAttributes.includes(card.extAttribute);
-    
-                const matchesCounter =
-                    Array.isArray(selectedCounterValues) &&
-                    selectedCounterValues.length > 0
-                        ? selectedCounterValues.includes(
-                              parseInt(card.extCounterplus, 10)
-                          )
-                        : true;
-                
-    
-                const matchesGroup = (() => {
-                    // Ensure consistent string comparison
-                    const cardGroupId = String(card.groupId).trim();
-                    const selectedId = String(selectedGroupID).trim();
-                                        
-                    return !selectedGroupID || cardGroupId === selectedId;
-                })();
-
+                }
                 return (
-                    matchesColor &&
-                    matchesSearchQuery &&
-                    matchesType &&
-                    matchesCost &&
-                    matchesPower &&
-                    matchesAttribute &&
-                    matchesCounter &&
-                    matchesGroup
+                    selectedColors.length === 0 ||
+                    selectedColors.some((color) => cardColors.includes(color))
                 );
-            });
+            })();
 
-            onFilteredCardsChange(filtered);
-        }
+            const matchesSearchQuery = searchQuery?.trim()?.toLowerCase()
+                ? Object.values(card || {}).some((value) =>
+                      value
+                          ?.toString()
+                          ?.toLowerCase()
+                          ?.includes(searchQuery.trim().toLowerCase())
+                  )
+                : true;
+
+            const matchesType =
+                selectedTypes?.length === 0 ||
+                selectedTypes.includes(card.extCardType);
+
+            const matchesCost =
+                selectedCostValues.length === 0 ||
+                (cardCost && selectedCostValues.map(v => parseInt(v, 10)).includes(cardCost));
+    
+            const matchesPower =
+                selectedPowerValues.length === 0 ||
+                (cardPower && selectedPowerValues.map(v => parseInt(v, 10)).includes(cardPower));
+    
+            const matchesCounter =
+                selectedCounterValues.length === 0 ||
+                (cardCounter && selectedCounterValues.map(v => parseInt(v, 10)).includes(cardCounter));
+    
+
+            const matchesAttribute =
+                selectedAttributes?.length === 0 ||
+                selectedAttributes.includes(card.extAttribute);
+            
+            const matchesGroup = (() => {
+                // Ensure consistent string comparison
+                const cardGroupId = String(card.groupId).trim();
+                const selectedId = String(selectedGroupID).trim();
+                                    
+                return !selectedGroupID || cardGroupId === selectedId;
+            })();
+
+            const matchesOwned = !showOwnedOnly || card.quantity > 0;
+
+            return (
+                matchesColor &&
+                matchesSearchQuery &&
+                matchesType &&
+                matchesCost &&
+                matchesPower &&
+                matchesGroup &&
+                matchesAttribute &&
+                matchesCounter &&
+                matchesGroup &&
+                matchesOwned
+            );
+        });
     }, [
         cards,
         selectedColors,
@@ -124,8 +126,12 @@ const FilterSidebar = ({
         selectedAttributes,
         selectedCounterValues,
         selectedGroupID,
-        onFilteredCardsChange,
+        showOwnedOnly
     ]);
+
+    useEffect(() => {
+        onFilteredCardsChange(filteredResults);
+    }, [filteredResults, onFilteredCardsChange]);
     
     const handleClearFilters = () => {
         onColorChange([]);
@@ -324,16 +330,18 @@ const FilterSidebar = ({
                 </div>
 
                 {/* Filter By Owned */}
-                <div className="owned-filter">
-                    <label>
-                        <input
-                            type="checkbox"
-                            checked={showOwnedOnly}
-                            onChange={onOwnedOnlyChange}
-                        />
-                        Owned Cards
-                    </label>
-                </div>
+                {showOwnedOnly !== undefined && onOwnedOnlyChange && (
+                    <div className="owned-filter">
+                        <label>
+                            <input
+                                type="checkbox"
+                                checked={showOwnedOnly}
+                                onChange={onOwnedOnlyChange}
+                            />
+                            Owned Cards
+                        </label>
+                    </div>
+                )}
 
                 <div className="sideFilter">
                     <button 

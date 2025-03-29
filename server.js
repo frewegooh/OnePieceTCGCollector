@@ -6,14 +6,26 @@ const axios = require('axios');
 const {Storage} = require('@google-cloud/storage');
 const storage = new Storage();
 const bucketName = 'card-tracker-images';
-let cardCache = null;
-let lastCacheTime = null;
 const compression = require('compression');
 const CACHE_DURATION = 1000 * 60 * 60 * 24; // 24 hours
+const NodeCache = require('node-cache');
+
+//let cardCache = null;
+//let lastCacheTime = null;
+const cardCache = new NodeCache({ 
+    stdTTL: CACHE_DURATION / 1000, // 24 hours in seconds
+    checkperiod: 3600 // Check expired cache every hour
+});
 
 const app = express();
 //const PORT = 5000;
 const PORT = process.env.PORT || 5000;
+
+// Add this constant for cache keys
+const CACHE_KEYS = {
+    CARDS: 'all_cards',
+    PRICES: 'card_prices'
+};
 
 const cors = require('cors');
 app.use(cors()); // Enable CORS for all routes
@@ -130,12 +142,10 @@ const setCodeToGroupId = {
     'AN25': '23834'    // Anime 25th Collection
 };
 
+// Replace the existing invalidateCache function
 const invalidateCache = () => {
-    cardCache = null;
-    lastCacheTime = null;
+    cardCache.flushAll();
 };
-
-
 
 // Add new endpoint for deck imports
 app.post('/api/deck-import', async (req, res) => {
@@ -288,13 +298,12 @@ app.use(express.static(path.join(__dirname, 'build')));
 // Serve static images
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
-// Endpoint to get combined CSV data
+// Replace your existing /api/cards endpoint
 app.get('/api/cards', async (req, res) => {
     try {
-        let cards;
-        if (cardCache && lastCacheTime && (Date.now() - lastCacheTime < CACHE_DURATION)) {
-            cards = cardCache;
-        } else {
+        let cards = cardCache.get(CACHE_KEYS.CARDS);
+        
+        if (!cards) {
             const folderPath = path.join(__dirname, 'csv-files');
             const files = fs.readdirSync(folderPath).filter(file => 
                 file.endsWith('.csv') && file !== 'OnePieceCardGameGroups.csv'
@@ -306,29 +315,17 @@ app.get('/api/cards', async (req, res) => {
                 const csvText = fs.readFileSync(filePath, 'utf-8');
                 const parsedData = Papa.parse(csvText, { header: true, skipEmptyLines: true }).data;
 
-                // Add debug logging here
                 parsedData.forEach(card => {
                     if (card.extColor) {
                         card.extColor = card.extColor.split(';').filter(Boolean);
-                        //console.log(`File: ${file}`);
-                        //console.log(`Card: ${card.name}`);
-                        //console.log(`Raw extColor: ${card.extColor}`);
                     }
-                });
-
-
-
-                // Add source file tracking for each card
-                parsedData.forEach(card => {
                     card._source_file = file;
                 });
                 cards = cards.concat(parsedData);
             }
             
-            // Update price data from remote sources
             cards = await updatePriceData(cards);
 
-            // Sort cards by priority sets for display order
             cards.sort((a, b) => {
                 const prioritySets = ['OP09', 'OP08', 'OP07', 'OP06', 'OP05', 'OP04', 'OP03', 'OP02', 'OP01'];
                 const indexA = prioritySets.indexOf(a.groupId);
@@ -341,8 +338,7 @@ app.get('/api/cards', async (req, res) => {
                 return 0;
             });
             
-            cardCache = cards;
-            lastCacheTime = Date.now();
+            cardCache.set(CACHE_KEYS.CARDS, cards);
         }
         
         res.json(cards);

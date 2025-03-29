@@ -21,7 +21,7 @@ export const formatCardTextWithHTML = (text) => {
     return DOMPurify.sanitize(formattedText);
 };
 
-const CardDetailPage = ({ getImageUrl, trackTCGPlayerClick }) => {
+const CardDetailPage = ({ getImageUrl, trackTCGPlayerClick, updateWishList, userWishList }) => {
     const { cardId } = useParams();
     const [card, setCard] = useState(null);
     const [imageUrl, setImageUrl] = useState(null);
@@ -79,8 +79,18 @@ const CardDetailPage = ({ getImageUrl, trackTCGPlayerClick }) => {
     // Add this useEffect to fetch decks
     useEffect(() => {
         const fetchDecksUsingCard = async () => {
-            if (!cardId) return;
+            if (!card?.extNumber) return;
             
+            // Get all cards response to find related productIds
+            const allCardsResponse = await fetch(`${API_URL}/api/cards`);
+            const allCards = await allCardsResponse.json();
+            
+            // Get all productIds that share the same extNumber
+            const relatedProductIds = allCards
+                .filter(c => c.extNumber === card.extNumber)
+                .map(c => c.productId);
+            
+            // Query decks and filter by any matching productId
             const decksQuery = query(collection(firestore, 'decks'));
             const querySnapshot = await getDocs(decksQuery);
             const decksWithCard = querySnapshot.docs
@@ -89,14 +99,14 @@ const CardDetailPage = ({ getImageUrl, trackTCGPlayerClick }) => {
                     ...doc.data()
                 }))
                 .filter(deck => 
-                    deck.cardIds.some(card => card.productId === cardId) ||
-                    deck.leaderId === cardId
+                    deck.cardIds.some(deckCard => relatedProductIds.includes(deckCard.productId)) ||
+                    relatedProductIds.includes(deck.leaderId)
                 );
             setDecksUsingCard(decksWithCard);
         };
-
+    
         fetchDecksUsingCard();
-    }, [cardId]);
+    }, [card?.extNumber]);
 
     // Add this useEffect to fetch related cards
     useEffect(() => {
@@ -185,6 +195,19 @@ const CardDetailPage = ({ getImageUrl, trackTCGPlayerClick }) => {
                     </label>
                 </div>
 
+                <div style={{ marginTop: '10px' }}>
+                    <label>
+                        <strong>Wanted:</strong>
+                        <input
+                            type="number"
+                            value={userWishList?.[cardId] || 0}
+                            onChange={(e) => updateWishList(cardId, parseInt(e.target.value, 10) || 0)}
+                            style={{ width: '50px', marginLeft: '5px' }}
+                            min="0"
+                        />
+                    </label>
+                </div>
+
                     {card.extColor && (
                         <p><strong>Color:</strong> {
                             Array.isArray(card.extColor) ? 
@@ -232,23 +255,6 @@ const CardDetailPage = ({ getImageUrl, trackTCGPlayerClick }) => {
             </div>
 
             <div className="related-content">
-                {decksUsingCard.length > 0 && (
-                    <div className="decks-section">
-                        <h2>Decks Using This Card</h2>
-                        <div className="decks-grid">
-                            {decksUsingCard.map(deck => (
-                                <div 
-                                    key={deck.id} 
-                                    className="deck-preview"
-                                    onClick={() => navigate(`/deck/${deck.id}`)}
-                                >
-                                    <h3>{deck.name}</h3>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
-
                 {relatedCards.length > 0 && (
                     <div className="related-cards-section">
                         <h2>Alternative Art Versions</h2>
@@ -260,6 +266,24 @@ const CardDetailPage = ({ getImageUrl, trackTCGPlayerClick }) => {
                                         alt={relatedCard.name}
                                         onClick={() => navigate(`/card/${relatedCard.productId}`)}
                                     />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+
+                {decksUsingCard.length > 0 && (
+                    <div className="decks-section">
+                        <h2>Decks Using This Card</h2>
+                        <div className="decks-grid">
+                            {decksUsingCard.map(deck => (
+                                <div 
+                                    key={deck.id} 
+                                    className="deck-preview"
+                                    onClick={() => navigate(`/deck/${deck.id}`)}
+                                >
+                                    <h3>{deck.name}</h3>
                                 </div>
                             ))}
                         </div>

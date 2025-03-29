@@ -139,7 +139,7 @@ const SetProgress = ({ cards, user }) => {
                             key={id} 
                             className="set-item"
                             onClick={() => {
-                                navigate('/collection', { 
+                                navigate('/my-collection', { 
                                     state: { 
                                         selectedGroupID: id,
                                         initialOwnedOnly: true 

@@ -1,0 +1,87 @@
+/* Trading Hub Styles */
+.trading-hub {
+    padding: 20px;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+.users-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.user-card {
+    background: var(--card-bg, #ffffff);
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+}
+
+.user-card:hover {
+    transform: translateY(-4px);
+}
+
+/* Public Wishlist Styles */
+.public-wishlist {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Trade Offer Modal Styles */
+.wishlist-trade-offer {
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.wanted-card-section,
+.offer-section,
+.selected-cards {
+    margin: 20px 0;
+    padding: 15px;
+    border-radius: 8px;
+    background: var(--section-bg, #f5f5f5);
+}
+
+.monetary-offer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 15px 0;
+}
+
+.monetary-offer input {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    width: 120px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.modal-actions button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.modal-actions button:first-child {
+    background-color: var(--primary-color, #4CAF50);
+    color: white;
+}
+
+.modal-actions button:last-child {
+    background-color: var(--secondary-color, #757575);
+    color: white;
+}

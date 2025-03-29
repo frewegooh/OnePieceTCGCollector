@@ -2,7 +2,7 @@ import React, { useState, useMemo, useCallback  } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 //import { getImageUrl } from '../config';
 
-const DeckAnalytics = ({ deck, leader, userCollection, getImageUrl, handleViewDetails, cards }) => {
+const DeckAnalytics = ({ deck, leader, userCollection, getImageUrl, handleViewDetails, cards, updateWishList }) => {
     const [isOpen] = useState(false);
 
     // Calculate card type distribution
@@ -130,7 +130,6 @@ const DeckAnalytics = ({ deck, leader, userCollection, getImageUrl, handleViewDe
             const leaderExtNumber = leader.extNumber;
             const totalLeaderQuantity = Object.entries(userCollection)
                 .reduce((total, [productId, quantity]) => {
-                    // Find all versions of this card in the database
                     const card = cards?.find(c => c.productId === productId);
                     if (card && card.extNumber === leaderExtNumber) {
                         return total + quantity;
@@ -153,7 +152,6 @@ const DeckAnalytics = ({ deck, leader, userCollection, getImageUrl, handleViewDe
             const cardExtNumber = deckCard.extNumber;
             const totalQuantity = Object.entries(userCollection)
                 .reduce((total, [productId, quantity]) => {
-                    // Find all versions of this card in the database
                     const card = cards?.find(c => c.productId === productId);
                     if (card && card.extNumber === cardExtNumber) {
                         return total + quantity;
@@ -275,6 +273,13 @@ const DeckAnalytics = ({ deck, leader, userCollection, getImageUrl, handleViewDe
         
         return `${baseUrl}c=${cardParam}${productLine}`;
     }, [deck, leader, userCollection, cards]);
+
+    // Add handler function for adding missing cards to wishlist
+    const handleAddMissingToWishlist = () => {
+        missingCards.forEach(card => {
+            updateWishList(card.productId, card.neededQuantity);
+        });
+    };
 
     const totalDeckValue = useMemo(() => calculateTotalValue(), [calculateTotalValue]);
     const missingCardsValue = useMemo(() => calculateMissingCardsValue(), [calculateMissingCardsValue]);
@@ -419,6 +424,14 @@ const DeckAnalytics = ({ deck, leader, userCollection, getImageUrl, handleViewDe
                             </div>
                         )}
                     </div>
+                    {missingCards.length > 0 && (
+                        <button 
+                            className="add-to-wishlist-button"
+                            onClick={handleAddMissingToWishlist}
+                        >
+                            Add Missing Cards to Wanted List
+                        </button>
+                    )}
                 </div>
             </div>
 

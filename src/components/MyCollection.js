@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { auth, firestore } from '../firebase';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import Papa from 'papaparse';
 import CardList from './CardList';
 import CardDetail from './CardDetail';
@@ -9,10 +9,13 @@ import FilterSidebar from './FilterSidebar';
 import API_URL from '../config';
 import LoginPrompt from './LoginPrompt';
 import { useLocation } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
-const MyCollection = ({ getImageUrl, trackTCGPlayerClick }) => {
+const MyCollection = ({ getImageUrl, trackTCGPlayerClick, updateWishList, userWishList, setUserWishList,
+    updateQuantity   }) => {
+    //console.log('MyCollection: updateQuantity prop:', updateQuantity);
     const [showLoginPrompt, setShowLoginPrompt] = useState(false);
-    const [user, setUser] = useState(null);
+    //const [_user, setUser] = useState(null);
     const [cards, setCards] = useState([]);
     const [filteredCards, setFilteredCards] = useState([]);
     const [selectedCard, setSelectedCard] = useState(null);
@@ -21,7 +24,7 @@ const MyCollection = ({ getImageUrl, trackTCGPlayerClick }) => {
     const [multicolorOnly, setMulticolorOnly] = useState(false);
     const [selectedGroupID, setSelectedGroupID] = useState(null);
     const [groupMap, setGroupMap] = useState({});
-    const [displayedCards, setDisplayedCards] = useState(25);
+    const [displayedCards, setDisplayedCards] = useState(24);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedTypes, setSelectedTypes] = useState([]);
     const [availableCostValues, setAvailableCostValues] = useState([]);
@@ -35,6 +38,22 @@ const MyCollection = ({ getImageUrl, trackTCGPlayerClick }) => {
     const [showOwnedOnly, setShowOwnedOnly] = useState(false);
     const [selectedCostValues, setSelectedCostValues] = useState([]);
     const location = useLocation();
+    //const [showWishList, setShowWishList] = useState(false);
+    const { currentUser } = useAuth();
+
+    useEffect(() => {
+        const syncWithFirebase = async () => {
+            if (currentUser) {
+                const docRef = doc(firestore, 'users', currentUser.uid);
+                const docSnap = await getDoc(docRef);
+                const userData = docSnap.data();
+                setUserWishList(userData?.wishList || {});
+            }
+        };
+        syncWithFirebase();
+    }, [currentUser, setUserWishList]);
+
+
 
     useEffect(() => {
         if (location.state?.selectedGroupID) {
@@ -129,47 +148,47 @@ const MyCollection = ({ getImageUrl, trackTCGPlayerClick }) => {
     };
     
 
-// Add handleColorFilterChange function
-const handleColorFilterChange = (updatedColors) => {
-    setSelectedColors(updatedColors);
-};
+    // Add handleColorFilterChange function
+    const handleColorFilterChange = (updatedColors) => {
+        setSelectedColors(updatedColors);
+    };
 
 // Add updateQuantity function
-const updateQuantity = async (cardId, newQuantity) => {
-    if (!user) return;
+// const updateQuantity = async (cardId, newQuantity) => {
+//     if (!user) return;
 
-    const docRef = doc(firestore, 'users', user.uid);
-    try {
-        const docSnap = await getDoc(docRef);
-        const currentQuantities = docSnap.exists() ? docSnap.data().cardQuantities || {} : {};
-        const updatedQuantities = {};
+//     const docRef = doc(firestore, 'users', user.uid);
+//     try {
+//         const docSnap = await getDoc(docRef);
+//         const currentQuantities = docSnap.exists() ? docSnap.data().cardQuantities || {} : {};
+//         const updatedQuantities = {};
         
-        for (const [id, qty] of Object.entries(currentQuantities)) {
-            if (id !== cardId && qty > 0) {
-                updatedQuantities[id] = qty;
-            }
-        }
+//         for (const [id, qty] of Object.entries(currentQuantities)) {
+//             if (id !== cardId && qty > 0) {
+//                 updatedQuantities[id] = qty;
+//             }
+//         }
 
-        if (newQuantity > 0) {
-            updatedQuantities[cardId] = newQuantity;
-        }
+//         if (newQuantity > 0) {
+//             updatedQuantities[cardId] = newQuantity;
+//         }
 
-        await setDoc(docRef, { cardQuantities: updatedQuantities });
+//         await setDoc(docRef, { cardQuantities: updatedQuantities });
 
-        setCards(prevCards => 
-            prevCards.map(card => 
-                card.productId === cardId ? { ...card, quantity: newQuantity } : card
-            )
-        );
-        setFilteredCards(prevCards => 
-            prevCards.map(card => 
-                card.productId === cardId ? { ...card, quantity: newQuantity } : card
-            )
-        );
-    } catch (error) {
-        console.error('Firebase update error:', error);
-    }
-};
+//         setCards(prevCards => 
+//             prevCards.map(card => 
+//                 card.productId === cardId ? { ...card, quantity: newQuantity } : card
+//             )
+//         );
+//         setFilteredCards(prevCards => 
+//             prevCards.map(card => 
+//                 card.productId === cardId ? { ...card, quantity: newQuantity } : card
+//             )
+//         );
+//     } catch (error) {
+//         console.error('Firebase update error:', error);
+//     }
+// };
 
         // Add card navigation handlers
         const handleViewDetails = (card) => {
@@ -215,7 +234,7 @@ const updateQuantity = async (cardId, newQuantity) => {
 
         useEffect(() => {
             const unsubscribe = auth.onAuthStateChanged(async (user) => {
-                setUser(user);
+                //setUser(user);
                 if (user) {
                     await loadUserCardData(user.uid);
                 }
@@ -346,7 +365,7 @@ const updateQuantity = async (cardId, newQuantity) => {
                     timeoutId = setTimeout(() => {
                         const { scrollTop, scrollHeight, clientHeight } = cardListContainer;
                         if (scrollTop + clientHeight >= scrollHeight - 50) {
-                            setDisplayedCards(prevDisplayedCards => prevDisplayedCards + 25);
+                            setDisplayedCards(prevDisplayedCards => prevDisplayedCards + 24);
                         }
                     }, 150);
                 };
@@ -363,7 +382,7 @@ const updateQuantity = async (cardId, newQuantity) => {
         useEffect(() => {
             const handleScroll = () => {
                 if ((window.innerHeight + window.scrollY) >= document.documentElement.scrollHeight - 50) {
-                    setDisplayedCards(prevDisplayedCards => prevDisplayedCards + 25);
+                    setDisplayedCards(prevDisplayedCards => prevDisplayedCards + 24);
                 }
             };
         
@@ -371,13 +390,28 @@ const updateQuantity = async (cardId, newQuantity) => {
             return () => window.removeEventListener('scroll', handleScroll);
         }, []);
 
+        // useEffect(() => {
+        //     console.log('MyCollection cards updated:', cards);
+        // }, [cards]);
+        
+        // useEffect(() => {
+        //     console.log('MyCollection filteredCards updated:', filteredCards);
+        // }, [filteredCards]);
+
+        const onFilteredCardsChange = useCallback((filtered) => {
+            setFilteredCards(filtered);
+        }, []);
+
+
     return (
         <>
             <div className='myCollectionPage'>
+
                 <div className="sideFilterPar">
                     <FilterSidebar
                         cards={cards}
-                        onFilteredCardsChange={setFilteredCards}
+                        onFilteredCardsChange={onFilteredCardsChange}
+                        //onFilteredCardsChange={setFilteredCards}
                         selectedColors={selectedColors}
                         onColorChange={handleColorFilterChange}
                         availableColors={availableColors}
@@ -420,6 +454,9 @@ const updateQuantity = async (cardId, newQuantity) => {
                     <CardList
                         cards={filteredCards.slice(0, displayedCards)}
                         updateQuantity={updateQuantity}
+                        updateWishList={updateWishList}  
+                        //showWishList={showWishList}  
+                        userWishList={userWishList}    
                         onSecondaryButtonClick={handleViewDetails}
                         secondaryButtonLabel="Card Info"
                         enableCardClick={true}
