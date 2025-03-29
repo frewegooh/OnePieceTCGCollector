@@ -79,6 +79,7 @@ const csvMapping  = {
     'https://tcgcsv.com/tcgplayer/68/23589/ProductsAndPrices.csv': 'EmperorsintheNewWorldProductsAndPrices.csv', //OP09
     'https://tcgcsv.com/tcgplayer/68/23590/ProductsAndPrices.csv': 'EmperorsintheNewWorld2ndAnniversaryTournamentCardsProductsAndPrices.csv', //OP09 2nd Anniversary 
     'https://tcgcsv.com/tcgplayer/68/23737/ProductsAndPrices.csv': 'TwoLegendsPre-ReleaseCardsProductsAndPrices.csv', //OP08 Pre-Release
+    'https://tcgcsv.com/tcgplayer/68/24068/ProductsAndPrices.csv': 'RoyalBloodReleaseEventCardsProductsAndPrices.csv', //OP10 - Pre-Release
     'https://tcgcsv.com/tcgplayer/68/23766/ProductsAndPrices.csv': 'RoyalBloodlinesProductsAndPrices.csv', //OP10 
     'https://tcgcsv.com/tcgplayer/68/23834/ProductsAndPrices.csv': 'ExtraBoosterAnime25thCollectionProductsAndPrices.csv', //Anime 25TH collection
     'https://tcgcsv.com/tcgplayer/68/23890/ProductsAndPrices.csv': 'RevisionPackCardsProductsAndPrices.csv', //Revision Pack
@@ -89,6 +90,7 @@ const csvMapping  = {
 // Add this mapping near the top with other constants
 const setCodeToGroupId = {
     // Main Sets
+    'OP10': '23766',
     'OP09': '23589',
     'OP08': '23462',
     'OP07': '23387',
@@ -122,6 +124,7 @@ const setCodeToGroupId = {
     'ST01': '3189',
 
     // Pre-Release Sets
+    'OP10-PR': '24068',
     'OP09-PR': '23590', // 2nd Anniversary
     'OP08-PR': '23737',
     'OP07-PR': '23512',
